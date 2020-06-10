@@ -18,31 +18,33 @@ Currently supported OS:
 It is possible to create, mount and share multiple different filesystems. There is no limit per user (for now). 
 
 ---
-**Pre-Install**
+**Pre-Requisite**
 ```
 $ apt-get update -y
 $ apt-get install -y git sshfs encfs
 ```
 
-**Install**
+**Installation**
 ```
 $ git clone https://github.com/hackerschoice/thc-rfs-client.git
 $ mkdir -p ~/thc/etc
 $ cp thc-rfs-client/id_rsa-rfs ~/thc/etc/
 ```
 
-Request a new RFS-SECRET from the server:
+Request a new RFS-SECRET from the server. Remember the RFS-SECRET.
 ```
 $ ssh -i ~/thc/etc/id_rsa-rfs rfs-init@rfs.thc.org
 ```
 
-Mount the Remote File Share locally:
+**Use**
+
+Mount the Remote File Share on your computer:
 ```
 $ mkdir -p ~/thc/rfs
 $ sshfs allow_other,default_permissions,IdentityFile=~/thc/etc/id_rsa-rfs <RFS-SECRET>@rfs.thc.org:rw ~/thc/rfs
 ```
 
-Create an encrypted volume.
+Create an encrypted volume inside the remote file share.
 ```
 $ mkdir -p ~/thc/sec
 $ export SECPASS=`dd if=/dev/urandom bs=1 count=32 2>/dev/null | openssl base64 | sed 's/[^a-zA-Z0-9]//g' | head -n1 | cut -c1-16`
@@ -52,10 +54,11 @@ $ encfs --standard ~/thc/rfs/encrypted ~/thc/sec
 
 Keep your RFS-SECRET and SEC-PASSWORD secure. 
 
-READY. All data written to ~/thc/sec is accessible to anyone with the knowledge of the SEC-PASSWORD and nobody else (not even THC).
+**SUCCESS!. All data written to ~/thc/sec is accessible to anyone with the knowledge of the SEC-PASSWORD and nobody else (not even THC).**
 
-The server stores no key material either.
+The server does not have access to the SEC-PASSWORD or the data.
 
+---
 Unmount everything:
 ```
 $ encfs -u ~/thc/sec
