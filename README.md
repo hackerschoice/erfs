@@ -26,7 +26,7 @@ $ apt-get install -y git sshfs encfs
 
 **Install**
 ```
-$ git clone https://github.com/SkyperTHC/thc-rfs-client.git
+$ git clone https://github.com/hackerschoice/thc-rfs-client.git
 $ mkdir -p ~/thc/etc
 $ cp thc-rfs-client/id_rsa-rfs ~/thc/etc/
 ```
@@ -69,4 +69,4 @@ $ encfs --standard ~/thc/rfs/encrypted ~/thc/sec
 ---
 **Running your own sever**
 
-You can run your own server is you desire to do so. This is optional. Please refer to [SkyperTHC/docker-thc-rfs-server](https://github.com/SkyperTHC/docker-thc-rfs-server) for more information.
+You can run your own server is you desire to do so. This is optional. Please refer to [hackerschoice/docker-thc-rfs-server](https://github.com/hackerschoice/docker-thc-rfs-server) for more information.
