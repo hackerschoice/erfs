@@ -17,6 +17,8 @@ Currently supported OS:
 
 It is possible to create, mount and share multiple different filesystems. There is no limit per user (for now). 
 
+By using our server ("the service") you agree that you will only use the service for research or for doing good things. You agree you will not use the service for illegal activities. If in doubt then please run your own server.
+
 ---
 **Pre-Requisite**
 ```
