@@ -56,13 +56,23 @@ READY. All data written to ~/thc/sec is accessible to anyone with the knowledge 
 
 The server stores no key material either.
 
+Unmount everything:
+```
+$ encfs -u ~/thc/sec
+$ umount -f ~/thc/rfs
+```
+
 ---
 **Sharing**
 
-If you receive a RFS-SECRET and SEC-PASSWORD then access the encrypted remote file system like so:
+If you receive a RFS-SECRET and SEC-PASSWORD then you can access somebody's else secure share and collaborate. Replaece the RFS-SECRET below and execute:
 ```
 $ mkdir -p ~/thc/rfs
 $ sshfs allow_other,default_permissions,IdentityFile=~/thc/etc/id_rsa-rfs <RFS-SECRET>@rfs.thc.org:rw ~/thc/rfs
+```
+
+Enter the SEC-PASSWORD when prompted:
+```
 $ encfs --standard ~/thc/rfs/encrypted ~/thc/sec
 ```
 
