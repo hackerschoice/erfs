@@ -29,57 +29,41 @@ $ apt-get install -y git sshfs encfs
 **Installation**
 ```
 $ git clone https://github.com/hackerschoice/thc-rfs-client.git
-$ mkdir -p ~/thc/etc
-$ cp thc-rfs-client/id_rsa-rfs ~/thc/etc/
+$ export PATH=$PATH:${PWD}/thc-rfs-client
 ```
 
-Request a new RFS-SECRET from the server. Remember the RFS-SECRET.
+Create a SHARE-SECRET and initialize a new File Share:
 ```
-$ ssh -i ~/thc/etc/id_rsa-rfs rfs-init@rfs.thc.org
+$ thc-rfs init
 ```
 
 **Use**
 
 Mount the Remote File Share on your computer:
 ```
-$ mkdir -p ~/thc/rfs
-$ sshfs allow_other,default_permissions,IdentityFile=~/thc/etc/id_rsa-rfs <RFS-SECRET>@rfs.thc.org:rw ~/thc/rfs
+$ thc-rfs mount <SHARE-SECRET> ~/secure
 ```
 
-Create an encrypted volume inside the remote file share.
-```
-$ mkdir -p ~/thc/sec
-$ export SECPASS=`dd if=/dev/urandom bs=1 count=32 2>/dev/null | openssl base64 | sed 's/[^a-zA-Z0-9]//g' | head -n1 | cut -c1-16`
-$ echo "Enter this SEC-PASSWORD below: sec-${SECPASS}"
-$ encfs --standard ~/thc/rfs/encrypted ~/thc/sec
-```
-
-Keep your RFS-SECRET and SEC-PASSWORD secure. 
-
-**SUCCESS!. All data written to ~/thc/sec is accessible to anyone with the knowledge of the SEC-PASSWORD and nobody else (not even THC).**
-
-The server does not have access to the SEC-PASSWORD or the data.
+The server does not have access to the SHARE-SECRET or the data. Keep the SHARE-SECRET secure. Anyone with the knowledge of the SHARE-SECRET can access the data.
 
 ---
 Unmount everything:
 ```
-$ encfs -u ~/thc/sec
-$ umount -f ~/thc/rfs
+$ thc-rfs umount <SHARE-SECRET>
 ```
 
 ---
 **Sharing**
 
-If you receive a RFS-SECRET and SEC-PASSWORD then you can access somebody's else secure share and collaborate. Replaece the RFS-SECRET below and execute:
+If you receive a SHARE-SECRET then you can access somebody's else secure share and collaborate at the same time. 
 ```
-$ mkdir -p ~/thc/rfs
-$ sshfs allow_other,default_permissions,IdentityFile=~/thc/etc/id_rsa-rfs <RFS-SECRET>@rfs.thc.org:rw ~/thc/rfs
+$ 
+$ thc-rfs mount <SHARE-SECRET>
 ```
 
-Enter the SEC-PASSWORD when prompted:
-```
-$ encfs --standard ~/thc/rfs/encrypted ~/thc/sec
-```
+---
+**Security**
+
 
 ---
 **Running your own sever**
