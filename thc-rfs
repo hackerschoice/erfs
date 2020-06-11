@@ -5,6 +5,9 @@ RFS_SERVER=rfs.thc.org
 RFS_SERVER=127.0.0.1
 RFS_PORT=2222
 
+# l(62^44)/l(2) == 261 Bit (ought to be enough)
+ENC_B62_LEN=44
+
 SSH_KEY_FILE="${ROOT_DIR}/.id_rsa-rfs"
 SSH_PARAM="-q -i ${SSH_KEY_FILE}"
 
@@ -97,14 +100,14 @@ derive_secrets()
 	# SPAS is the ssh login password
 	RSEC=$(b64sanitize `echo s1"${1}" | openssl sha256 | xxd -r -p | openssl base64` 16)
 	RID=$(b64sanitize `echo i2"${1}" | openssl sha256 | xxd -r -p | openssl base64` 4) 
-	EPAS=$(b64sanitize `echo s3"${1}" | openssl sha256 | xxd -r -p | openssl base64` 24)
+	EPAS=$(b64sanitize `echo s3"${1}" | openssl sha256 | xxd -r -p | openssl base64` "$ENC_B62_LEN")
 	SPAS=$(b64sanitize `echo p4"${1}" | openssl sha256 | xxd -r -p | openssl base64` 16)
 }
 
 master_pwd_new()
 {
 	# Create a new Master Password
-	MPASS=$(b64sanitize `dd if=/dev/urandom bs=1 count=32 2>/dev/null | openssl base64` 24)
+	MPASS=$(b64sanitize `dd if=/dev/urandom bs=1 count=48 2>/dev/null | openssl base64` "$ENC_B62_LEN")
 }
 
 unmount()
@@ -168,7 +171,7 @@ elif [ x"$1" = xstop ] || [ x"$1" = xu ] || [ x"$1" = xumount ] || [ x"$1" = xun
 		unmount_all
 		exit 0
 	fi
-	if [ ${#2} -ne 24 ]; then
+	if [ ${#2} -ne "$ENC_B62_LEN" ]; then
 		echo "ERROR. Illegal master password"
 		exit -1
 	fi
@@ -196,7 +199,7 @@ if [ x"$1" != xmount ] && [ x"$1" != xm ]; then
 	usage
 fi
 
-if [ ${#2} -ne 24 ]; then
+if [ ${#2} -ne "$ENC_B62_LEN" ]; then
 	echo "ERROR: Illegal master password"
 	exit -1
 fi
