@@ -68,6 +68,7 @@ Passing the SHARE-SECRET by command line parameter is insecure. A better way is:
 ```
 $ export BLAH=<SHARE-SECRET>
 $ ./thc-rfs mount /dev/stdin <<<"${BLAH}"
+$ unset BLAH
 ```
 
 ---
