@@ -6,11 +6,11 @@ This tool allows one or multiple users to mount and share a remote encrypted fil
 It is possible to mount the filesystem from multiple computers at the same time. The data is securely and seamlessly syncronized. The server has no knowledge of the content and can not access to the data. All key material is created on the user's computer and never stored or transfered to the server.
 
 Features:  
-- Does not require root or superuser priviledges (it uses sshfs)
+- Does not require root or superuser priviledges
 - Server has no access to the data
 - FileSystem can be mounted from multiple computers at the same time.
 - Multi-User support
-- 256 bit AES encryption (it uses EncFS)
+- 256 bit AES encryption
 
 Currently supported OS:  
 - Linux  
@@ -71,6 +71,8 @@ $ export BLAH=<SHARE-SECRET>
 $ ./thc-rfs mount /dev/stdin <<<"${BLAH}"
 $ unset BLAH
 ```
+
+The tools relies on the security of ssh, sshfs and EncFS.
 
 ---
 **Running your own sever**
