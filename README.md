@@ -33,12 +33,12 @@ $ git clone https://github.com/hackerschoice/thc-rfs-client.git
 $ export PATH=$PATH:${PWD}/thc-rfs-client
 ```
 
+**Use**
+
 Create a SHARE-SECRET and initialize a new File Share:
 ```
 $ thc-rfs init
 ```
-
-**Use**
 
 Mount the Remote File Share on your computer:
 ```
