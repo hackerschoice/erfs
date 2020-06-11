@@ -2,6 +2,7 @@
 
 ROOT_DIR=~/thc
 RFS_SERVER=rfs.thc.org
+RFS_PORT=22
 RFS_SERVER=127.0.0.1
 RFS_PORT=2222
 
@@ -59,7 +60,7 @@ debug()
 usage()
 {
 	echo "\
-$0 [CMD] <password> [<mount-point>]
+$0 [CMD] <share-secret> [<mount-point>]
 
 CMD:
     init    - Create a NEW secure file system
@@ -67,18 +68,22 @@ CMD:
     umount  - Unmount a secure file system
     clean   - Unmount all and purge runtime directories (wont delete data).
 
-Create a NEW secure file system:
-    $ $0 new 
+Create a NEW and empty secure remote file system:
+    $ $0 init 
 
-Mount an EXISTING secure file system:
-    $ $0 1234567890ABCDEF
+Mount an EXISTING secure remote file system to ~/test:
+    $ $0 mount <SHARE-SECRET> ~/test
 
-Mount an EXISTING secure file system to ~/test:
-    $ $0 1234567890ABCDEF ~/test
+Unmount a secure remote file system:
+    $ $0 umount <SHARE-SECRET>
 
-Unmount a secure file system:
-    $ $0 stop 1234567890ABCDEF"
+Unmount all secure remote file systems:
+    $ $0 umount
 
+Passing the SHARE-SECRET by argument is insecure. A better way is:
+    $ export BLAH=<SHARE-SECRET>
+    $ $0 mount /dev/stdin <<<\"\${BLAH}\"
+    $ unset BLAH"
 
 	exit -1
 }
@@ -133,6 +138,25 @@ unmount_all()
 	done
 }
 
+get_mpass()
+{
+	# read master password from file,device or sym-link if exists
+	if [ x"${1}" = x ]; then
+		echo "ERROR: Need to specify password"
+		exit -1
+	fi
+	if [ -e "${1}" ]; then
+		read mpass <"${1}"
+	else
+		mpass="${1}"
+	fi
+	if [ ${#mpass} -ne "$ENC_B62_LEN" ]; then
+		echo "ERROR. Illegal master password"
+		exit -1
+	fi
+
+}
+
 if [ $# -lt 1 ]; then
 	usage
 fi
@@ -157,25 +181,26 @@ if [ x"$1" = xinit ] || [ x"$1" = xnew ] || [ x"$1" = xi ]; then
 	export THC_RFS_SECRET="${RSEC}"
 	export THC_SSH_PASSWORD="${SPAS}"
 	# Bump the server to create a new file share
+	echo "ssh -p ${RFS_PORT} ${SSH_PARAM} -o SendEnv=\"THC_RFS_SECRET THC_SSH_PASSWORD\" rfs-init@${RFS_SERVER}"
 	ssh -p ${RFS_PORT} ${SSH_PARAM} -o SendEnv="THC_RFS_SECRET THC_SSH_PASSWORD" rfs-init@${RFS_SERVER}
 	if [ $? -ne 0 ]; then
 		echo "Server problem. Aborting..."
 		exit -1
 	fi
 	echo "SUCCESS! Now mount your newly created file system like so:"
-	echo "    $ $0 mount $MPASS"
+	echo "    $ export BLAH=$MPASS"
+	echo "    $ $0 mount /dev/stdin <<<\"\$BLAH\""
+	echo "    $ unset BLAH"
 	exit 0
 elif [ x"$1" = xstop ] || [ x"$1" = xu ] || [ x"$1" = xumount ] || [ x"$1" = xunmount ]; then
-	# Unmount by master-password
+	# Unmount all if no share-secret
 	if [ ${#2} -eq 0 ]; then
 		unmount_all
 		exit 0
 	fi
-	if [ ${#2} -ne "$ENC_B62_LEN" ]; then
-		echo "ERROR. Illegal master password"
-		exit -1
-	fi
-	derive_secrets "${2}"
+	# Unmount by share-secret
+	get_mpass "${2}"
+	derive_secrets "${mpass}"
 	unmount "${RID}"
 	exit 0
 elif [ x"$1" = xclean ] || [ x"$1" = xc ]; then
@@ -195,16 +220,12 @@ fi
 
 # HERE: Command is 'mount' or similar.
 if [ x"$1" != xmount ] && [ x"$1" != xm ]; then
-	echo "ERROR: Unknown command or illegal password".
+	echo "ERROR: Unknown command or illegal share-secret."
 	usage
 fi
 
-if [ ${#2} -ne "$ENC_B62_LEN" ]; then
-	echo "ERROR: Illegal master password"
-	exit -1
-fi
-
-derive_secrets "${2}" "$3"
+get_mpass "${2}"
+derive_secrets "${mpass}"
 
 mkdir -p "${ROOT_DIR}/.run/id-${RID}"
 USER_MOUNT_POINT="${ROOT_DIR}/sec-${RID}"
@@ -238,7 +259,7 @@ if [ $ret -ne 0 ]; then
 	# sshfs failed.
 	echo "ERROR: sshfs failed."
 	echo "    1. The volume is already mounted."
-	echo "    2. Wrong master password."
+	echo "    2. Wrong master share-secret."
 	echo "    3. The server can not be reached."
 	exit -1
 fi
@@ -249,7 +270,7 @@ if [ ! -d "${ROOT_DIR}/.run/id-${RID}/rfs/encrypted" ]; then
 	# This should never happen unless someone delete the 'encrypted'
 	# directory manually.
 	umount -f "${ROOT_DIR}/.run/id-${RID}/rfs"
-	echo "ERROR: File System does not exist. Wrong password?"
+	echo "ERROR: File System does not exist. Wrong share-secret?"
 	exit -1
 fi
 
