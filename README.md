@@ -74,4 +74,4 @@ $ unset BLAH
 ---
 **Running your own sever**
 
-You can run your own server is you desire to do so. This is optional. Please refer to [hackerschoice/docker-thc-rfs-server](https://github.com/hackerschoice/docker-thc-rfs-server) for more information.
+You can run your own server if you desire to do so. This is optional. Please refer to [hackerschoice/docker-thc-rfs-server](https://github.com/hackerschoice/docker-thc-rfs-server) for more information.
