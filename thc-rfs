@@ -6,7 +6,7 @@ RFS_SERVER=127.0.0.1
 RFS_PORT=2222
 
 SSH_KEY_FILE="${ROOT_DIR}/.id_rsa-rfs"
-SSH_PARAM="-i ${SSH_KEY_FILE}"
+SSH_PARAM="-q -i ${SSH_KEY_FILE}"
 
 SSH_PRIV_KEY="-----BEGIN OPENSSH PRIVATE KEY-----
 b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAABlwAAAAdzc2gtcn
@@ -90,17 +90,21 @@ b64sanitize()
 # Deterministic secret from Master-Secret
 derive_secrets()
 {
-	# Derive a RFS-SECRET and an ENCRYPTION PASSWORD from the Master:
+	# Derive all keys from the master key
+	# RSEC is the username
+	# RID a local id (short)
+	# EPAS is the encryptino password
+	# SPAS is the ssh login password
 	RSEC=$(b64sanitize `echo s1"${1}" | openssl sha256 | xxd -r -p | openssl base64` 16)
 	RID=$(b64sanitize `echo i2"${1}" | openssl sha256 | xxd -r -p | openssl base64` 4) 
-	EPAS=$(b64sanitize `echo s3"${1}" | openssl sha256 | xxd -r -p | openssl base64` 16)
+	EPAS=$(b64sanitize `echo s3"${1}" | openssl sha256 | xxd -r -p | openssl base64` 24)
 	SPAS=$(b64sanitize `echo p4"${1}" | openssl sha256 | xxd -r -p | openssl base64` 16)
 }
 
 master_pwd_new()
 {
 	# Create a new Master Password
-	MPASS=$(b64sanitize `dd if=/dev/urandom bs=1 count=32 2>/dev/null | openssl base64` 16)
+	MPASS=$(b64sanitize `dd if=/dev/urandom bs=1 count=32 2>/dev/null | openssl base64` 24)
 }
 
 unmount()
@@ -114,6 +118,17 @@ unmount()
 	rm -f "${ROOT_DIR}/sec-${1}"
 }
 
+unmount_all()
+{
+	for x in "${ROOT_DIR}/.run/id-"*; do
+		if [ ! -d "${x}" ]; then
+			break
+		fi
+		id=`echo "$x" | cut -f2 -d-`
+		debug "Working on '${id}'"
+		unmount "$id"
+	done
+}
 
 if [ $# -lt 1 ]; then
 	usage
@@ -122,6 +137,7 @@ fi
 mkdir -p "${ROOT_DIR}"
 if [ ! -f "${SSH_KEY_FILE}" ]; then
 	echo "${SSH_PRIV_KEY}" >"${SSH_KEY_FILE}"
+	chmod 700 "${SSH_KEY_FILE}"
 fi
 
 #if [ ! -d "${ROOT_DIR}" ]; then
@@ -148,7 +164,11 @@ if [ x"$1" = xinit ] || [ x"$1" = xnew ] || [ x"$1" = xi ]; then
 	exit 0
 elif [ x"$1" = xstop ] || [ x"$1" = xu ] || [ x"$1" = xumount ] || [ x"$1" = xunmount ]; then
 	# Unmount by master-password
-	if [ ${#2} -ne 16 ]; then
+	if [ ${#2} -eq 0 ]; then
+		unmount_all
+		exit 0
+	fi
+	if [ ${#2} -ne 24 ]; then
 		echo "ERROR. Illegal master password"
 		exit -1
 	fi
@@ -157,14 +177,7 @@ elif [ x"$1" = xstop ] || [ x"$1" = xu ] || [ x"$1" = xumount ] || [ x"$1" = xun
 	exit 0
 elif [ x"$1" = xclean ] || [ x"$1" = xc ]; then
 	# unmount all directories and clean all runtime directories
-	for x in "${ROOT_DIR}/.run/id-"*; do
-		if [ ! -d "${x}" ]; then
-			break
-		fi
-		id=`echo "$x" | cut -f2 -d-`
-		echo "Working on '${id}'"
-		unmount "$id"
-	done
+	unmount_all
 	[ -d "${ROOT_DIR}/.run" ] && rmdir "${ROOT_DIR}/.run"
 	for x in "${ROOT_DIR}/sec-"*; do
 		if [ ! -L "${x}" ]; then
@@ -183,7 +196,7 @@ if [ x"$1" != xmount ] && [ x"$1" != xm ]; then
 	usage
 fi
 
-if [ ${#2} -ne 16 ]; then
+if [ ${#2} -ne 24 ]; then
 	echo "ERROR: Illegal master password"
 	exit -1
 fi
@@ -199,10 +212,7 @@ if [ ${#3} -ne 0 ]; then
 		exit -1
 	fi
 	# Link from the default mount point to the user specified mount point
-	#ln -sf "${3}" "$ENCFS_MOUNT_POINT" 
-	#ln -sf "${3}" "${USER_MOUNT_POINT}"
 	ln -sf "${3}" "${ENCFS_MOUNT_POINT}"
-	echo "doing ln -sf ${3} ${ENCFS_MOUNT_POINT}"
 	ENCFS_MOUNT_POINT="${3}"
 	USER_MOUNT_POINT="${ENCFS_MOUNT_POINT}"
 else
@@ -240,13 +250,11 @@ if [ ! -d "${ROOT_DIR}/.run/id-${RID}/rfs/encrypted" ]; then
 	exit -1
 fi
 
-#ln -sf /dev/null "${ROOT_DIR}/.run/id-${RID}/rsec/.sec"
 # Securely pass password to encfs...well, as secure as this shit can be.
 # if sshfs failed then "./encrypted" is still a sym-link to /dev/null and
 # sshfs will fail.
 export EPAS
 encfs -S --standard "${ROOT_DIR}/.run/id-${RID}/rfs/encrypted" "${ENCFS_MOUNT_POINT}" <<<"${EPAS}" >/dev/null
-#encfs -S --standard "${ROOT_DIR}/.run/id-${RID}/rfs/encrypted" "${ROOT_DIR}/.run/id-${RID}/rsec" <<<"${EPAS}" >/dev/null
 ret=$?
 unset EPAS
 if [ $ret -ne 0 ]; then
@@ -254,26 +262,11 @@ if [ $ret -ne 0 ]; then
 	exit -1
 fi
 
-# If this is the first time we mount it then .sec does not yet exist. Create it.
-#[ ! -L "${ROOT_DIR}/.run/id-${RID}/rsec/.sec" ] && ln -sf . "${ROOT_DIR}/.run/id-${RID}/rsec/.sec"
-
-# Link to the correct encrypted directory
-#if [ -e "${ROOT_DIR}/sec-${RID}" ] && [ ! -L "${ROOT_DIR}/sec-${RID}" ]; then
-#	echo "Oops. ${ROOT_DIR}/sec-${RID} is not sym-link."
-#	echo "This should never happen. This should be a sym-link."
-#	echo "Better check if any data was written to that directory"
-#	echo "while secure fs was not mounted.."
-#	exit -1
-#fi
-
 ln -sf "${ENCFS_MOUNT_POINT}" "${ROOT_DIR}/sec-${RID}"
-#ln -sf "${ENCFS_MOUNT_POINT}"ROOT_DIR}/.run/id-${RID}/rsec/.sec" "${ROOT_DIR}/sec-${RID}"
-#if [ ! -L "${ROOT_DIR}/sec-${RID}" ]; then
 if [ $? -ne 0 ]; then
 	unmount "${RID}"
 	exit -1
 fi
-#fi
 
 echo "Encrypted partition mounted to ${USER_MOUNT_POINT}"
 
