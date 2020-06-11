@@ -1,0 +1,279 @@
+#! /bin/bash
+
+ROOT_DIR=~/thc
+RFS_SERVER=rfs.thc.org
+RFS_SERVER=127.0.0.1
+RFS_PORT=2222
+
+SSH_KEY_FILE="${ROOT_DIR}/.id_rsa-rfs"
+SSH_PARAM="-i ${SSH_KEY_FILE}"
+
+SSH_PRIV_KEY="-----BEGIN OPENSSH PRIVATE KEY-----
+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
+Fb9mr1O9fL8zkAAAALdHBAdGVyZWtub3I=
+-----END OPENSSH PRIVATE KEY-----"
+
+debug()
+{
+	#echo $@
+	:
+}
+
+usage()
+{
+	echo "\
+$0 [CMD] <password> [<mount-point>]
+
+CMD:
+    init    - Create a NEW secure file system
+    mount   - Mount a secure file system
+    umount  - Unmount a secure file system
+    clean   - Unmount all and purge runtime directories (wont delete data).
+
+Create a NEW secure file system:
+    $ $0 new 
+
+Mount an EXISTING secure file system:
+    $ $0 1234567890ABCDEF
+
+Mount an EXISTING secure file system to ~/test:
+    $ $0 1234567890ABCDEF ~/test
+
+Unmount a secure file system:
+    $ $0 stop 1234567890ABCDEF"
+
+
+	exit -1
+}
+
+# Input is base64. Do a dirty base58 here (it's not really but close enough)
+b64sanitize()
+{
+	local CLEAR=`echo "$1" | sed 's/[^a-zA-Z0-9]//g' | head -n1 | cut -c1-$2`
+	echo $CLEAR
+}
+
+# Deterministic secret from Master-Secret
+derive_secrets()
+{
+	# Derive a RFS-SECRET and an ENCRYPTION PASSWORD from the Master:
+	RSEC=$(b64sanitize `echo s1"${1}" | openssl sha256 | xxd -r -p | openssl base64` 16)
+	RID=$(b64sanitize `echo i2"${1}" | openssl sha256 | xxd -r -p | openssl base64` 4) 
+	EPAS=$(b64sanitize `echo s3"${1}" | openssl sha256 | xxd -r -p | openssl base64` 16)
+	SPAS=$(b64sanitize `echo p4"${1}" | openssl sha256 | xxd -r -p | openssl base64` 16)
+}
+
+master_pwd_new()
+{
+	# Create a new Master Password
+	MPASS=$(b64sanitize `dd if=/dev/urandom bs=1 count=32 2>/dev/null | openssl base64` 16)
+}
+
+unmount()
+{
+	encfs -u "${ROOT_DIR}/.run/id-${1}/rsec"
+	umount -f "${ROOT_DIR}/.run/id-${1}/rfs"
+	[ -L "${ROOT_DIR}/.run/id-${1}/rsec" ] && rm -f  "${ROOT_DIR}/.run/id-${1}/rsec"
+	[ -d "${ROOT_DIR}/.run/id-${1}/rsec" ] && rmdir  "${ROOT_DIR}/.run/id-${1}/rsec"
+	rmdir  "${ROOT_DIR}/.run/id-${1}/rfs"
+	rmdir "${ROOT_DIR}/.run/id-${1}"
+	rm -f "${ROOT_DIR}/sec-${1}"
+}
+
+
+if [ $# -lt 1 ]; then
+	usage
+fi
+
+mkdir -p "${ROOT_DIR}"
+if [ ! -f "${SSH_KEY_FILE}" ]; then
+	echo "${SSH_PRIV_KEY}" >"${SSH_KEY_FILE}"
+fi
+
+#if [ ! -d "${ROOT_DIR}" ]; then
+#	print "Failed to access ${ROOT_DIR}. Try 'mkdir -p ${ROOT_DIR}'"
+#	exit -1
+#fi
+
+if [ x"$1" = xinit ] || [ x"$1" = xnew ] || [ x"$1" = xi ]; then
+	if [ x"$2" != x ]; then
+		usage
+	fi
+	master_pwd_new
+	derive_secrets "${MPASS}"
+	export THC_RFS_SECRET="${RSEC}"
+	export THC_SSH_PASSWORD="${SPAS}"
+	# Bump the server to create a new file share
+	ssh -p ${RFS_PORT} ${SSH_PARAM} -o SendEnv="THC_RFS_SECRET THC_SSH_PASSWORD" rfs-init@${RFS_SERVER}
+	if [ $? -ne 0 ]; then
+		echo "Server problem. Aborting..."
+		exit -1
+	fi
+	echo "SUCCESS! Now mount your newly created file system like so:"
+	echo "    $ $0 mount $MPASS"
+	exit 0
+elif [ x"$1" = xstop ] || [ x"$1" = xu ] || [ x"$1" = xumount ] || [ x"$1" = xunmount ]; then
+	# Unmount by master-password
+	if [ ${#2} -ne 16 ]; then
+		echo "ERROR. Illegal master password"
+		exit -1
+	fi
+	derive_secrets "${2}"
+	unmount "${RID}"
+	exit 0
+elif [ x"$1" = xclean ] || [ x"$1" = xc ]; then
+	# unmount all directories and clean all runtime directories
+	for x in "${ROOT_DIR}/.run/id-"*; do
+		if [ ! -d "${x}" ]; then
+			break
+		fi
+		id=`echo "$x" | cut -f2 -d-`
+		echo "Working on '${id}'"
+		unmount "$id"
+	done
+	[ -d "${ROOT_DIR}/.run" ] && rmdir "${ROOT_DIR}/.run"
+	for x in "${ROOT_DIR}/sec-"*; do
+		if [ ! -L "${x}" ]; then
+			break
+		fi
+		rm -f "${x}"
+	done
+	rm -f "${ROOT_DIR}/.id_rsa-rfs"
+	rmdir "${ROOT_DIR}"
+	exit 0
+fi
+
+# HERE: Command is 'mount' or similar.
+if [ x"$1" != xmount ] && [ x"$1" != xm ]; then
+	echo "ERROR: Unknown command or illegal password".
+	usage
+fi
+
+if [ ${#2} -ne 16 ]; then
+	echo "ERROR: Illegal master password"
+	exit -1
+fi
+
+derive_secrets "${2}" "$3"
+
+mkdir -p "${ROOT_DIR}/.run/id-${RID}"
+USER_MOUNT_POINT="${ROOT_DIR}/sec-${RID}"
+ENCFS_MOUNT_POINT="${ROOT_DIR}/.run/id-${RID}/rsec"
+if [ ${#3} -ne 0 ]; then
+	if [ ! -d "${3}" ]; then
+		echo "Directory ${3} does not exist."
+		exit -1
+	fi
+	# Link from the default mount point to the user specified mount point
+	#ln -sf "${3}" "$ENCFS_MOUNT_POINT" 
+	#ln -sf "${3}" "${USER_MOUNT_POINT}"
+	ln -sf "${3}" "${ENCFS_MOUNT_POINT}"
+	echo "doing ln -sf ${3} ${ENCFS_MOUNT_POINT}"
+	ENCFS_MOUNT_POINT="${3}"
+	USER_MOUNT_POINT="${ENCFS_MOUNT_POINT}"
+else
+	[ -L "${ROOT_DIR}/.run/id-${RID}/rsec" ] && rm -f "${ROOT_DIR}/.run/id-${RID}/rsec"
+	mkdir -p "${ROOT_DIR}/.run/id-${RID}/rsec"
+fi
+
+
+debug "DEBUG master $MPASS  (r $RSEC e $EPAS rid $RID s $SPAS)"
+
+command -v sshfs >/dev/null 2>&1 || { echo >&2 "sshfs not found. Try 'apt-get install sshfs'"; exit 1; }
+command -v encfs >/dev/null 2>&1 || { echo >&2 "EncFS not found. Try 'apt-get install encfs'"; exit 1; }
+
+mkdir -p "${ROOT_DIR}/.run/id-${RID}/rfs"
+export SPAS
+sshfs -p "${RFS_PORT}" -o allow_other,default_permissions,password_stdin rfs-"${RSEC}@${RFS_SERVER}:rw" "${ROOT_DIR}/.run/id-${RID}/rfs" <<<"${SPAS}"
+ret=$?
+unset SPAS
+if [ $ret -ne 0 ]; then
+	# sshfs failed.
+	echo "ERROR: sshfs failed."
+	echo "    1. The volume is already mounted."
+	echo "    2. Wrong master password."
+	echo "    3. The server can not be reached."
+	exit -1
+fi
+
+# Check if the 'encrypted' subdirectory exists
+if [ ! -d "${ROOT_DIR}/.run/id-${RID}/rfs/encrypted" ]; then
+	# File system exists (sshfs worked) but no file found.
+	# This should never happen unless someone delete the 'encrypted'
+	# directory manually.
+	umount -f "${ROOT_DIR}/.run/id-${RID}/rfs"
+	echo "ERROR: File System does not exist. Wrong password?"
+	exit -1
+fi
+
+#ln -sf /dev/null "${ROOT_DIR}/.run/id-${RID}/rsec/.sec"
+# Securely pass password to encfs...well, as secure as this shit can be.
+# if sshfs failed then "./encrypted" is still a sym-link to /dev/null and
+# sshfs will fail.
+export EPAS
+encfs -S --standard "${ROOT_DIR}/.run/id-${RID}/rfs/encrypted" "${ENCFS_MOUNT_POINT}" <<<"${EPAS}" >/dev/null
+#encfs -S --standard "${ROOT_DIR}/.run/id-${RID}/rfs/encrypted" "${ROOT_DIR}/.run/id-${RID}/rsec" <<<"${EPAS}" >/dev/null
+ret=$?
+unset EPAS
+if [ $ret -ne 0 ]; then
+	echo "EncFS failed. Aborting..."
+	exit -1
+fi
+
+# If this is the first time we mount it then .sec does not yet exist. Create it.
+#[ ! -L "${ROOT_DIR}/.run/id-${RID}/rsec/.sec" ] && ln -sf . "${ROOT_DIR}/.run/id-${RID}/rsec/.sec"
+
+# Link to the correct encrypted directory
+#if [ -e "${ROOT_DIR}/sec-${RID}" ] && [ ! -L "${ROOT_DIR}/sec-${RID}" ]; then
+#	echo "Oops. ${ROOT_DIR}/sec-${RID} is not sym-link."
+#	echo "This should never happen. This should be a sym-link."
+#	echo "Better check if any data was written to that directory"
+#	echo "while secure fs was not mounted.."
+#	exit -1
+#fi
+
+ln -sf "${ENCFS_MOUNT_POINT}" "${ROOT_DIR}/sec-${RID}"
+#ln -sf "${ENCFS_MOUNT_POINT}"ROOT_DIR}/.run/id-${RID}/rsec/.sec" "${ROOT_DIR}/sec-${RID}"
+#if [ ! -L "${ROOT_DIR}/sec-${RID}" ]; then
+if [ $? -ne 0 ]; then
+	unmount "${RID}"
+	exit -1
+fi
+#fi
+
+echo "Encrypted partition mounted to ${USER_MOUNT_POINT}"
+
