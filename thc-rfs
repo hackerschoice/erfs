@@ -1,10 +1,8 @@
 #! /bin/bash
 
 ROOT_DIR=~/thc
-RFS_SERVER=rfs.thc.org
-RFS_PORT=22
-RFS_SERVER=127.0.0.1
-RFS_PORT=2222
+[ -z "$THC_RFS_SERVER" ] && THC_RFS_SERVER=rfs.thc.org
+[ -z "$THC_RFS_PORT" ] && THC_RFS_PORT=22
 
 # l(62^44)/l(2) == 261 Bit (ought to be enough)
 ENC_B62_LEN=44
@@ -181,8 +179,7 @@ if [ x"$1" = xinit ] || [ x"$1" = xnew ] || [ x"$1" = xi ]; then
 	export THC_RFS_SECRET="${RSEC}"
 	export THC_SSH_PASSWORD="${SPAS}"
 	# Bump the server to create a new file share
-	echo "ssh -p ${RFS_PORT} ${SSH_PARAM} -o SendEnv=\"THC_RFS_SECRET THC_SSH_PASSWORD\" rfs-init@${RFS_SERVER}"
-	ssh -p ${RFS_PORT} ${SSH_PARAM} -o SendEnv="THC_RFS_SECRET THC_SSH_PASSWORD" rfs-init@${RFS_SERVER}
+	ssh -p ${THC_RFS_PORT} ${SSH_PARAM} -o SendEnv="THC_RFS_SECRET THC_SSH_PASSWORD" rfs-init@${THC_RFS_SERVER}
 	if [ $? -ne 0 ]; then
 		echo "Server problem. Aborting..."
 		exit -1
@@ -252,7 +249,7 @@ command -v encfs >/dev/null 2>&1 || { echo >&2 "EncFS not found. Try 'apt-get in
 
 mkdir -p "${ROOT_DIR}/.run/id-${RID}/rfs"
 export SPAS
-sshfs -p "${RFS_PORT}" -o allow_other,default_permissions,password_stdin rfs-"${RSEC}@${RFS_SERVER}:rw" "${ROOT_DIR}/.run/id-${RID}/rfs" <<<"${SPAS}"
+sshfs -p "${THC_RFS_PORT}" -o allow_other,default_permissions,password_stdin rfs-"${RSEC}@${THC_RFS_SERVER}:rw" "${ROOT_DIR}/.run/id-${RID}/rfs" <<<"${SPAS}"
 ret=$?
 unset SPAS
 if [ $ret -ne 0 ]; then
