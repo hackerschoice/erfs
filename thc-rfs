@@ -169,7 +169,11 @@ get_mpass()
 		echo "   $0 unmount"
 		exit -1
 	fi
-	if [ -e "${1}" ]; then
+	# Grugq's idea:
+	if [ x"${1}" = "x-x" ] || [ x"${1}" = "xstdin" ]; then
+		echo -n "Enter SHARE-SECRET: "
+		read mpass
+	elif [ -e "${1}" ]; then
 		read mpass <"${1}"
 	else
 		mpass="${1}"
