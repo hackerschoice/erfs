@@ -132,10 +132,23 @@ master_pwd_new()
 	MPASS=$(b58sanitize `dd if=/dev/urandom bs=1 count=48 2>/dev/null | openssl base64` "$ENC_B58_LEN")
 }
 
+unmount_cmd()
+{
+	# Linux does not accept sym-link as unmount points.
+	REAL_RSEC=`readlink -f "${1}"`
+	if [ x"${HAS_FUSERMOUNT}" = x1 ]; then
+		fusermount -u "${REAL_RSEC}"
+	else
+		# Try MacOS way..(fusermount does not exist)
+		umount "${REAL_RSEC}"
+	fi
+}
+
 unmount()
 {
-	encfs -u "${ROOT_DIR}/.run/id-${1}/rsec"
-	umount -f "${ROOT_DIR}/.run/id-${1}/rfs"
+
+	unmount_cmd "${ROOT_DIR}/.run/id-${1}/rsec"
+	unmount_cmd "${ROOT_DIR}/.run/id-${1}/rfs"
 	[ -L "${ROOT_DIR}/.run/id-${1}/rsec" ] && rm -f  "${ROOT_DIR}/.run/id-${1}/rsec"
 	[ -d "${ROOT_DIR}/.run/id-${1}/rsec" ] && rmdir  "${ROOT_DIR}/.run/id-${1}/rsec"
 	rmdir  "${ROOT_DIR}/.run/id-${1}/rfs"
@@ -199,6 +212,12 @@ replace()
 if [ $# -lt 1 ]; then
 	usage
 fi
+
+command -v sshfs >/dev/null 2>&1 || { echo >&2 "sshfs not found. Try 'apt-get install sshfs'"; exit 1; }
+command -v encfs >/dev/null 2>&1 || { echo >&2 "EncFS not found. Try 'apt-get install encfs'"; exit 1; }
+# MacOS does not have fusermount and uses 'umount' instead.
+HAS_FUSERMOUNT=1
+command -v fusermount >/dev/null 2>&1 || HAS_FUSERMOUNT=0 
 
 mkdir -p "${ROOT_DIR}"
 if [ ! -f "${SSH_KEY_FILE}" ]; then
@@ -276,6 +295,7 @@ if [ ${#3} -ne 0 ]; then
 		exit -1
 	fi
 	# Link from the default mount point to the user specified mount point
+	rmdir "${ROOT_DIR}/.run/id-${RID}/rsec" 2>/dev/null
 	ln -sf "${3}" "${ENCFS_MOUNT_POINT}"
 	ENCFS_MOUNT_POINT="${3}"
 	USER_MOUNT_POINT="${ENCFS_MOUNT_POINT}"
@@ -287,12 +307,11 @@ fi
 
 debug "DEBUG master $MPASS  (r $RSEC e $EPAS rid $RID s $SPAS)"
 
-command -v sshfs >/dev/null 2>&1 || { echo >&2 "sshfs not found. Try 'apt-get install sshfs'"; exit 1; }
-command -v encfs >/dev/null 2>&1 || { echo >&2 "EncFS not found. Try 'apt-get install encfs'"; exit 1; }
 
 mkdir -p "${ROOT_DIR}/.run/id-${RID}/rfs"
 export SPAS
-sshfs -p "${THC_RFS_PORT}" -o allow_other,default_permissions,password_stdin,idmap=user,uid="${UID}",gid="`id -g \"$USER\"`" rfs-"${RSEC}@${THC_RFS_SERVER}:rw" "${ROOT_DIR}/.run/id-${RID}/rfs" <<<"${SPAS}"
+# Linux non-root does not allo 'allow_other'
+sshfs -p "${THC_RFS_PORT}" -o ssh_command='ssh -o StrictHostKeyChecking=accept-new' -o default_permissions,password_stdin,idmap=user,uid="${UID}",gid="`id -g \"$USER\"`" rfs-"${RSEC}@${THC_RFS_SERVER}:rw" "${ROOT_DIR}/.run/id-${RID}/rfs" <<<"${SPAS}"
 ret=$?
 unset SPAS
 if [ $ret -ne 0 ]; then
@@ -309,7 +328,6 @@ if [ ! -d "${ROOT_DIR}/.run/id-${RID}/rfs/encrypted" ]; then
 	# File system exists (sshfs worked) but no file found.
 	# This should never happen unless someone delete the 'encrypted'
 	# directory manually.
-	#umount -f "${ROOT_DIR}/.run/id-${RID}/rfs"
 	echo "ERROR: File System does not exist. Wrong share-secret?"
 	exit -1
 fi
