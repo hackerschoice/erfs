@@ -1,7 +1,7 @@
 # thc-rfs-client
 Encrypted Remote File System CLIENT
 
-Direct Download: [thc-rfs](https://github.com/hackerschoice/thc-rfs-client/blob/master/thc-rfs)
+Direct Download: [thc-rfs](https://raw.githubusercontent.com/hackerschoice/thc-rfs-client/master/thc-rfs)
 
 This bash-script allows one or multiple users to mount and share a remote encrypted filesystem. The server is provided by THC as a courtesy and free (as in free beer!).
 
@@ -36,7 +36,13 @@ $ git clone https://github.com/hackerschoice/thc-rfs-client.git
 $ export PATH=$PATH:${PWD}/thc-rfs-client
 ```
 
-**Use**
+or if you do not have git:
+```
+$ wget https://raw.githubusercontent.com/hackerschoice/thc-rfs-client/master/thc-rfs
+$ curl -OL https://raw.githubusercontent.com/hackerschoice/thc-rfs-client/master/thc-rfs
+```
+
+**Usage**
 
 Create a SHARE-SECRET and initialize a new File Share:
 ```
