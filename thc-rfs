@@ -182,6 +182,16 @@ get_mpass()
 
 }
 
+# Replace string in file
+replace()
+{
+	grep "$2" "$1" >/dev/null
+	if [ $? -eq 0 ]; then
+		# Pattern found; replace in file
+		sed -i-old "s/$2/$3/g" "$1" >/dev/null
+	fi
+}
+
 if [ $# -lt 1 ]; then
 	usage
 fi
@@ -298,6 +308,12 @@ if [ ! -d "${ROOT_DIR}/.run/id-${RID}/rfs/encrypted" ]; then
 	#umount -f "${ROOT_DIR}/.run/id-${RID}/rfs"
 	echo "ERROR: File System does not exist. Wrong share-secret?"
 	exit -1
+fi
+
+# Increase block-size to 4k to increase EncFS performance (3x on MacOS)
+FILE="${ROOT_DIR}/.run/id-${RID}/rfs/encrypted/.encfs6.xml"
+if [ -f "$FILE" ] && [ ! -f "$FILE"-old ]; then
+	replace "${ROOT_DIR}/.run/id-${RID}/rfs/encrypted/.encfs6.xml" "blockSize>1024" "blockSize>4096"
 fi
 
 # Display MOTD and wait...Only way we can notiy a user..
