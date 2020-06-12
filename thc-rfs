@@ -198,8 +198,9 @@ if [ x"$1" = xinit ] || [ x"$1" = xnew ] || [ x"$1" = xi ]; then
 	derive_secrets "${MPASS}"
 	export THC_RFS_SECRET="${RSEC}"
 	export THC_SSH_PASSWORD="${SPAS}"
+	export THC_RFS_VERSION="1.1"
 	# Bump the server to create a new file share
-	ssh -p ${THC_RFS_PORT} ${SSH_PARAM} -o SendEnv="THC_RFS_SECRET THC_SSH_PASSWORD" rfs-init@${THC_RFS_SERVER}
+	ssh -p ${THC_RFS_PORT} ${SSH_PARAM} -o SendEnv="THC_RFS_VERSION THC_RFS_TOKEN THC_RFS_SECRET THC_SSH_PASSWORD" rfs-init@${THC_RFS_SERVER}
 	if [ $? -ne 0 ]; then
 		echo "Server problem. Aborting..."
 		exit -1
@@ -270,7 +271,7 @@ command -v encfs >/dev/null 2>&1 || { echo >&2 "EncFS not found. Try 'apt-get in
 
 mkdir -p "${ROOT_DIR}/.run/id-${RID}/rfs"
 export SPAS
-sshfs -p "${THC_RFS_PORT}" -o allow_other,default_permissions,password_stdin rfs-"${RSEC}@${THC_RFS_SERVER}:rw" "${ROOT_DIR}/.run/id-${RID}/rfs" <<<"${SPAS}"
+sshfs -p "${THC_RFS_PORT}" -o allow_other,default_permissions,password_stdin,idmap=user,uid="${UID}",gid="`id -g \"$USER\"`" rfs-"${RSEC}@${THC_RFS_SERVER}:rw" "${ROOT_DIR}/.run/id-${RID}/rfs" <<<"${SPAS}"
 ret=$?
 unset SPAS
 if [ $ret -ne 0 ]; then
@@ -287,7 +288,7 @@ if [ ! -d "${ROOT_DIR}/.run/id-${RID}/rfs/encrypted" ]; then
 	# File system exists (sshfs worked) but no file found.
 	# This should never happen unless someone delete the 'encrypted'
 	# directory manually.
-	umount -f "${ROOT_DIR}/.run/id-${RID}/rfs"
+	#umount -f "${ROOT_DIR}/.run/id-${RID}/rfs"
 	echo "ERROR: File System does not exist. Wrong share-secret?"
 	exit -1
 fi
