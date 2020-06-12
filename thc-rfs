@@ -120,10 +120,10 @@ derive_secrets()
 	# RID a local id (short)
 	# EPAS is the encryptino password
 	# SPAS is the ssh login password
-	RSEC=$(b58sanitize `echo s1"${1}" | openssl sha256 | xxd -r -p | openssl base64` 16)
-	RID=$(b58sanitize `echo i2"${1}" | openssl sha256 | xxd -r -p | openssl base64` 4) 
-	EPAS=$(b58sanitize `echo s3"${1}" | openssl sha256 | xxd -r -p | openssl base64` "$ENC_B58_LEN")
-	SPAS=$(b58sanitize `echo p4"${1}" | openssl sha256 | xxd -r -p | openssl base64` 16)
+	RSEC=$(b58sanitize "`echo s1\"${1}\" | openssl sha256 -binary | openssl base64`" 16)
+	RID=$(b58sanitize "`echo i2\"${1}\" | openssl sha256 -binary | openssl base64`" 4) 
+	EPAS=$(b58sanitize "`echo s3\"${1}\" | openssl sha256 -binary | openssl base64`" "$ENC_B58_LEN")
+	SPAS=$(b58sanitize "`echo p4\"${1}\" | openssl sha256 -binary | openssl base64`" 16)
 }
 
 master_pwd_new()
