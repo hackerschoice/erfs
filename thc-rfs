@@ -162,6 +162,13 @@ get_mpass()
 		echo "ERROR: Need to specify password"
 		exit -1
 	fi
+	if [ -d "${1}" ]; then
+		echo "ERROR: Please specify the SHARE-SECRET instead of the mount point"
+		echo "   $0 umount <SHARE-SECRET>"
+		echo "or unmount all devices:"
+		echo "   $0 unmount"
+		exit -1
+	fi
 	if [ -e "${1}" ]; then
 		read mpass <"${1}"
 	else
