@@ -135,7 +135,8 @@ master_pwd_new()
 unmount_cmd()
 {
 	# Linux does not accept sym-link as unmount points.
-	REAL_RSEC=`readlink -f "${1}"`
+	REAL_RSEC="${1}"
+	[ -L "${1}" ] && REAL_RSEC=`readlink "${1}"`
 	if [ x"${HAS_FUSERMOUNT}" = x1 ]; then
 		fusermount -u "${REAL_RSEC}"
 	else
