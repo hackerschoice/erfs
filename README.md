@@ -68,7 +68,7 @@ $ thc-rfs mount <SHARE-SECRET>
 Passing the SHARE-SECRET by command line parameter is insecure. A better way is:
 ```
 $ X=<SHARE-SECRET>
-$ ./thc-rfs mount /dev/stdin <<<"$X"
+$ thc-rfs mount /dev/stdin <<<"$X"
 $ unset X
 ```
 
