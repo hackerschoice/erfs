@@ -4,8 +4,12 @@ ROOT_DIR=~/thc
 [ -z "$THC_RFS_SERVER" ] && THC_RFS_SERVER=rfs.thc.org
 [ -z "$THC_RFS_PORT" ] && THC_RFS_PORT=22
 
-# l(62^44)/l(2) == 261 Bit (ought to be enough)
-ENC_B62_LEN=44
+# l(58^44)/l(2) == 257 Bit
+ENC_B58_LEN=44
+# l(58^32)/l(2) == 187 Bit
+ENC_B58_LEN=32
+# l(58^24)/l(2) == 140 Bit (ought to be enough)
+ENC_B58_LEN=24
 
 SSH_KEY_FILE="${ROOT_DIR}/.id_rsa-rfs"
 SSH_PARAM="-q -i ${SSH_KEY_FILE}"
@@ -86,11 +90,26 @@ Passing the SHARE-SECRET by argument is insecure. A better way is:
 	exit -1
 }
 
-# Input is base64. Do a dirty base58 here (it's not really but close enough)
-b64sanitize()
+# Do a dirty base58 from input data (likely to be base64)
+b58sanitize()
 {
-	local CLEAR=`echo "$1" | sed 's/[^a-zA-Z0-9]//g' | head -n1 | cut -c1-$2`
+	local CLEAR=`echo "$1" | sed 's/[^a-zA-Z0-9]//g' | sed 's/[0OIl]//g'| head -n1 | cut -c1-$2`
+	if [ ${#CLEAR} -lt "$2" ]; then
+		# This is fatal and should never happen
+		echo "ERROR base58: ${#CLEAR} but length is $2"
+		exit -1
+	fi
 	echo $CLEAR
+}
+
+# Converts (user-)input into likely output.
+# 0 -> o
+# O -> o
+# l -> 1
+# I -> 1
+b58convert()
+{
+	echo "$1" | tr 0OlI oo11
 }
 
 # Deterministic secret from Master-Secret
@@ -101,16 +120,16 @@ derive_secrets()
 	# RID a local id (short)
 	# EPAS is the encryptino password
 	# SPAS is the ssh login password
-	RSEC=$(b64sanitize `echo s1"${1}" | openssl sha256 | xxd -r -p | openssl base64` 16)
-	RID=$(b64sanitize `echo i2"${1}" | openssl sha256 | xxd -r -p | openssl base64` 4) 
-	EPAS=$(b64sanitize `echo s3"${1}" | openssl sha256 | xxd -r -p | openssl base64` "$ENC_B62_LEN")
-	SPAS=$(b64sanitize `echo p4"${1}" | openssl sha256 | xxd -r -p | openssl base64` 16)
+	RSEC=$(b58sanitize `echo s1"${1}" | openssl sha256 | xxd -r -p | openssl base64` 16)
+	RID=$(b58sanitize `echo i2"${1}" | openssl sha256 | xxd -r -p | openssl base64` 4) 
+	EPAS=$(b58sanitize `echo s3"${1}" | openssl sha256 | xxd -r -p | openssl base64` "$ENC_B58_LEN")
+	SPAS=$(b58sanitize `echo p4"${1}" | openssl sha256 | xxd -r -p | openssl base64` 16)
 }
 
 master_pwd_new()
 {
 	# Create a new Master Password
-	MPASS=$(b64sanitize `dd if=/dev/urandom bs=1 count=48 2>/dev/null | openssl base64` "$ENC_B62_LEN")
+	MPASS=$(b58sanitize `dd if=/dev/urandom bs=1 count=48 2>/dev/null | openssl base64` "$ENC_B58_LEN")
 }
 
 unmount()
@@ -148,7 +167,8 @@ get_mpass()
 	else
 		mpass="${1}"
 	fi
-	if [ ${#mpass} -ne "$ENC_B62_LEN" ]; then
+	mpas=$(b58convert "$mpass")
+	if [ ${#mpass} -ne "$ENC_B58_LEN" ]; then
 		echo "ERROR. Illegal master password"
 		exit -1
 	fi
@@ -185,9 +205,10 @@ if [ x"$1" = xinit ] || [ x"$1" = xnew ] || [ x"$1" = xi ]; then
 		exit -1
 	fi
 	echo "SUCCESS! Now mount your newly created file system like so:"
-	echo "    $ export BLAH=$MPASS"
-	echo "    $ $0 mount /dev/stdin <<<\"\$BLAH\""
-	echo "    $ unset BLAH"
+	echo ""
+	echo "  $ $0 mount $MPASS"
+	echo "or"
+	echo "  $ X=$MPASS;$0 m /dev/stdin<<<\$X;unset X"
 	exit 0
 elif [ x"$1" = xstop ] || [ x"$1" = xu ] || [ x"$1" = xumount ] || [ x"$1" = xunmount ]; then
 	# Unmount all if no share-secret
@@ -269,6 +290,14 @@ if [ ! -d "${ROOT_DIR}/.run/id-${RID}/rfs/encrypted" ]; then
 	umount -f "${ROOT_DIR}/.run/id-${RID}/rfs"
 	echo "ERROR: File System does not exist. Wrong share-secret?"
 	exit -1
+fi
+
+# Display MOTD and wait...Only way we can notiy a user..
+if [ -f "${ROOT_DIR}/.run/id-${RID}/rfs/motd" ]; then
+	# Discard any nasty characters. Limit to 24 lines.
+	tail -n24 <"${ROOT_DIR}/.run/id-${RID}/rfs/motd" | sed 's/[^a-zA-Z0-9#!. ]//g' 
+	echo "Waiting 10 seconds before continuing..."
+	sleep 10
 fi
 
 # Securely pass password to encfs...well, as secure as this shit can be.
