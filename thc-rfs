@@ -311,7 +311,7 @@ debug "DEBUG master $MPASS  (r $RSEC e $EPAS rid $RID s $SPAS)"
 mkdir -p "${ROOT_DIR}/.run/id-${RID}/rfs"
 export SPAS
 # Linux non-root does not allo 'allow_other'
-sshfs -p "${THC_RFS_PORT}" -o ssh_command='ssh -o StrictHostKeyChecking=accept-new' -o default_permissions,password_stdin,idmap=user,uid="${UID}",gid="`id -g \"$USER\"`" rfs-"${RSEC}@${THC_RFS_SERVER}:rw" "${ROOT_DIR}/.run/id-${RID}/rfs" <<<"${SPAS}"
+sshfs -p "${THC_RFS_PORT}" -o auto_cache -o ssh_command='ssh -o StrictHostKeyChecking=accept-new' -o default_permissions,password_stdin,idmap=user,uid="${UID}",gid="`id -g \"$USER\"`" rfs-"${RSEC}@${THC_RFS_SERVER}:rw" "${ROOT_DIR}/.run/id-${RID}/rfs" <<<"${SPAS}"
 ret=$?
 unset SPAS
 if [ $ret -ne 0 ]; then
