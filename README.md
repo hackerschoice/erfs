@@ -84,6 +84,33 @@ $ unset X
 The tools relies on the security of ssh, sshfs and EncFS.
 
 ---
+**Tips**
+
+Using a different server:
+```
+$ export THC_RFS_SERVER=1.2.3.4
+$ export THC_RFS_PORT=2222
+```
+
+Prompting for the SHARE-SECRET (Grugq's idea):
+```
+$ thc-rfs mount -x
+Enter SHARE-SECRET: 
+```
+
+Reading SHARE-SECRET from a file. Put this into your ~/.bashrc to mount the file system every time you log in:
+```
+$ thc-rfs mount my-share-secret.txt
+```
+
+Shorten the commands:
+```
+$ thc-rfs i
+$ thc-rfs m
+$ thc-rfs u
+```
+
+---
 **Running your own sever**
 
-You can run your own server if you desire to do so. This is optional. Please refer to [hackerschoice/docker-thc-rfs-server](https://github.com/hackerschoice/docker-thc-rfs-server) for more information.
+You are encouraged to run your own server. This is optional. Please refer to [hackerschoice/docker-thc-rfs-server](https://github.com/hackerschoice/docker-thc-rfs-server) for more information.
