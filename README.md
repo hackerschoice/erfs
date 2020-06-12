@@ -1,6 +1,8 @@
 # thc-rfs-client
 Encrypted Remote File System CLIENT
 
+Direct Download: [thc-rfs](https://github.com/hackerschoice/thc-rfs-client/blob/master/thc-rfs)
+
 This bash-script allows one or multiple users to mount and share a remote encrypted filesystem. The server is provided by THC as a courtesy and free (as in free beer!).
 
 It is possible to mount the multiple filesystems from multiple computers at the same time. The data is securely and seamlessly syncronized. There is no limit per user (for now).
@@ -13,6 +15,7 @@ Features:
 - FileSystem can be mounted from multiple computers at the same time.
 - Multi-User support
 - 256 bit AES encryption
+- 24 characters base58 password
 
 Currently supported OS:  
 - Linux  
