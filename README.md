@@ -4,25 +4,25 @@ An easy-to-use, easy-to-setup, hassle-free secure file system with the encrypted
 Direct Download: [thc-rfs](https://raw.githubusercontent.com/hackerschoice/thc-rfs-client/master/thc-rfs)  
 Technical Details: [Technical-Details](https://github.com/hackerschoice/thc-rfs-client/wiki/Technical-Details)
 
-The client is a bash-script. The cloud server is provided by THC as a courtesy and free (as in free beer!).
+The client is a bash-script. The cloud server is provided by THC for free (as in free beer!).
 
-There is no limit per user, no limit of the of file systems that can be created and no limit of how many locations access the same filesystem simoultanously. It supports colaboration so that the same filesystem can be accessed from multiple different computers at the same time. The data is securely and seamlessly syncronized.
+There is no limit per user, no limit of the number of file systems and no limit of how many locations can access the same file system simoultanously. It supports colaboration and the same filesystem can be accessed from different computers at the same time. The data is securely and seamlessly synchronized.
 
 The server has no knowledge of the content. A rogue server operator can not access the data. All key material is created on the user's computer and never stored or transfered to the server.
 
 **Features:**  
-- Does not require root or superuser priviledges.
+- Does not require root or superuser privileges.
 - Data to remain secure even if the server is compromised.
-- Can be used by multiple users from multiple locations at the same time and simulatnously.
+- Can be used by multiple users from many locations at the same time and simulatnously.
 - No Public Key Infrastructure. Everything to work by 'Deterministic Key Derivation' (like Bitcoin does).
 - Strong AES encryption
 - Base58 passwords 24 characters long (enforced).
 
-**Currently supported OS:**  
+**Currently supported OSes:**  
 - Linux  
 - MacOS  
 
-*By using our server ("the service") you agree that you will only use the service for research or for doing good things. You agree you will not use the service for illegal activities. If in doubt then please run your own server.*
+*By using our server ("the service") you agree that you will only use the service for research or for doing good things. You agree that you will not use the service for illegal activities. If in doubt then please run your own server.*
 
 ---
 **Pre-Requisite**
@@ -78,7 +78,7 @@ $ thc-rfs umount <SHARE-SECRET>
 ---
 **Sharing**
 
-If you receive a SHARE-SECRET then you can access somebody's else secure share and collaborate at the same time. 
+If you receive a SHARE-SECRET then you can access somebody else's secure share and collaborate at the same time. 
 ```ShellSession
 $ thc-rfs mount <SHARE-SECRET>
 ```
@@ -86,14 +86,14 @@ $ thc-rfs mount <SHARE-SECRET>
 ---
 **Security**
 
-Passing the SHARE-SECRET by command line parameter is insecure. A better way is:
+Passing SHARE-SECRET using the command line parameter is not secure. A better way is:
 ```ShellSession
 $ X=<SHARE-SECRET>
 $ thc-rfs mount /dev/stdin <<<"$X"
 $ unset X
 ```
 
-The tools relies on the security of ssh, sshfs and EncFS.
+The tool relies on the underlying security of ssh, sshfs and EncFS.
 
 ---
 **Tips**
