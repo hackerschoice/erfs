@@ -6,15 +6,15 @@ Technical Details: [Technical-Details](https://github.com/hackerschoice/thc-rfs-
 
 This bash-script allows one or multiple users to mount and share a remote encrypted filesystem. The server is provided by THC as a courtesy and free (as in free beer!).
 
-It is possible to mount the multiple filesystems from multiple computers at the same time. The data is securely and seamlessly syncronized. There is no limit per user (for now).
+It is possible to mount multiple filesystems from multiple computers at the same time. The data is securely and seamlessly syncronized. There is no limit per user (for now).
 
-The server has no knowledge of the content and we can not access the data. All key material is created on the user's computer and never stored or transfered to the server.
+The server has no knowledge of the content. A rogue server operator can not access the data. All key material is created on the user's computer and never stored or transfered to the server.
 
 Features:  
-- Does not require root or superuser priviledges
-- Server has no access to the data
-- FileSystem can be mounted from multiple computers at the same time.
-- Multi-User support
+- Does not require root or superuser priviledges.
+- Data to remain secure even if the server is compromised.
+- Can be used by multiple users from multiple locations at the same time and simulatnously.
+- No Public Key Infrastructure. Everything to work by 'Deterministic Key Derivation' (like Bitcoin does).
 - 256 bit AES encryption
 - 24 characters base58 password
 
