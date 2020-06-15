@@ -1,5 +1,5 @@
 # thc-rfs-client
-Encrypted Remote File System CLIENT
+THC-RFS is an easy-to-use, easy-to-setup, no-headache secure file system with the encrypted data being stored on a remote server/cloud and inaccessible to a rogue server operator.
 
 Direct Download: [thc-rfs](https://raw.githubusercontent.com/hackerschoice/thc-rfs-client/master/thc-rfs)  
 Technical Details: [Technical-Details](https://github.com/hackerschoice/thc-rfs-client/wiki/Technical-Details)
