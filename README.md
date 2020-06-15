@@ -16,7 +16,7 @@ Features:
 - Can be used by multiple users from multiple locations at the same time and simulatnously.
 - No Public Key Infrastructure. Everything to work by 'Deterministic Key Derivation' (like Bitcoin does).
 - 256 bit AES encryption
-- 24 characters base58 password
+- Base58 passwords 24 characters long (enforced).
 
 Currently supported OS:  
 - Linux  
