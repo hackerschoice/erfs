@@ -45,14 +45,26 @@ $ curl -OL https://raw.githubusercontent.com/hackerschoice/thc-rfs-client/master
 
 **Usage**
 
-Create a SHARE-SECRET and initialize a new File Share:
+Create a SHARE-SECRET and initialize a new File Share (example):
 ```
 $ thc-rfs init
+Server: Creating a new Remote File Share....
+
+--> You MUST remember this SHARE-SECRET. Access to the data is lost <--
+--> *FOREVER* if the SHARE-SECRET is lost. KEEP IT SAFE.            <--
+
+        ##############################################
+        ##                                          ##
+        ##  SHARE-SECRET: aDe5F2ik3x35x7pfAEAWdC5Y  ##
+        ##                                          ##
+        ##############################################
 ```
 
-Mount the Remote File Share on your computer:
+Mount the Remote File Share on your computer (example):
 ```
-$ thc-rfs mount <SHARE-SECRET> ~/secure
+$ thc-rfs mount aDe5F2ik3x35x7pfAEAWdC5Y ~/secure
+Encrypted partition mounted to /Users/me/secure
+$ ls -al ~/secure
 ```
 
 The server does not have access to the SHARE-SECRET or the data. Keep the SHARE-SECRET secure. Anyone with the knowledge of the SHARE-SECRET can access the data.
