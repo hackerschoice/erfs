@@ -62,13 +62,16 @@ debug()
 usage()
 {
 	echo "\
-$0 [CMD] <share-secret> [<mount-point>]
+$0 <CMD> [<options>] <share-secret> [<mount-point>]
 
 CMD:
     init    - Create a NEW secure file system
     mount   - Mount a secure file system
-    umount  - Unmount a secure file system
+    umount  - Unmount one or all secure file systems
     clean   - Unmount all and purge runtime directories (wont delete data).
+
+Options:
+    -x      - Prompt for SHARE-SECRET
 
 Create a NEW and empty secure remote file system:
     $ $0 init 
@@ -80,12 +83,7 @@ Unmount a secure remote file system:
     $ $0 umount <SHARE-SECRET>
 
 Unmount all secure remote file systems:
-    $ $0 umount
-
-Passing the SHARE-SECRET by argument is insecure. A better way is:
-    $ export BLAH=<SHARE-SECRET>
-    $ $0 mount /dev/stdin <<<\"\${BLAH}\"
-    $ unset BLAH"
+    $ $0 umount"
 
 	exit -1
 }
@@ -246,11 +244,22 @@ if [ x"$1" = xinit ] || [ x"$1" = xnew ] || [ x"$1" = xi ]; then
 		echo "Server problem. Aborting..."
 		exit -1
 	fi
-	echo "SUCCESS! Now mount your newly created file system like so:"
-	echo ""
-	echo "  $ $0 mount $MPASS"
-	echo "or"
-	echo "  $ X=$MPASS;$0 m /dev/stdin<<<\$X;unset X"
+	echo "
+--> You MUST remember this SHARE-SECRET. Access to the data is lost <--
+--> *FOREVER* if the SHARE-SECRET is lost. KEEP IT SAFE.            <--
+
+        ##############################################
+        ##                                          ##
+        ##  SHARE-SECRET: $MPASS  ##
+        ##                                          ##
+        ##############################################
+
+SUCCESS! Now mount your newly created file system like so:
+
+  $ $0 mount -x
+or 
+  $ X=$MPASS;$0 m /dev/stdin<<<\$X;unset X"
+
 	exit 0
 elif [ x"$1" = xstop ] || [ x"$1" = xu ] || [ x"$1" = xumount ] || [ x"$1" = xunmount ]; then
 	# Unmount all if no share-secret
