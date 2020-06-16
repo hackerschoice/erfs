@@ -218,6 +218,19 @@ command -v encfs >/dev/null 2>&1 || { echo >&2 "EncFS not found. Try 'apt-get in
 HAS_FUSERMOUNT=1
 command -v fusermount >/dev/null 2>&1 || HAS_FUSERMOUNT=0 
 
+if [[ x"$OSTYPE" == "xdarwin"* ]]; then
+	VER=`sshfs --version 2>&1 | grep ^SSHFS | cut -f3 -d" "`
+	if [ x"$VER" = "x2.9" ]; then
+		echo "
+Buggy SSHFS dedected. Your read performance might be slow.
+Please read https://github.com/osxfuse/sshfs/issues/57 for details.
+
+To fix this please executed:
+    $ sudo curl -sSL https://tiny.cc/apewqz >\""`which sshfs`"\""
+	fi
+
+fi
+
 mkdir -p "${ROOT_DIR}"
 if [ ! -f "${SSH_KEY_FILE}" ]; then
 	echo "${SSH_PRIV_KEY}" >"${SSH_KEY_FILE}"
