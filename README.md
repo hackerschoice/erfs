@@ -14,6 +14,7 @@ The server has no knowledge of the content. A rogue server operator can not acce
 **Features:**  
 - Does not require root or superuser privileges.
 - Data to remain secure even if the server is compromised.
+- Encrypts file name and content.
 - Can be used by multiple users from many locations at the same time and simulatnously.
 - No Public Key Infrastructure. Everything to work by 'Deterministic Key Derivation' (like Bitcoin does).
 - Strong AES encryption
