@@ -147,6 +147,9 @@ unmount()
 {
 
 	unmount_cmd "${ROOT_DIR}/.run/id-${1}/rsec"
+	if [ $? -ne 0 ]; then
+		return
+	fi
 	unmount_cmd "${ROOT_DIR}/.run/id-${1}/rfs"
 	[ -L "${ROOT_DIR}/.run/id-${1}/rsec" ] && rm -f  "${ROOT_DIR}/.run/id-${1}/rsec"
 	[ -d "${ROOT_DIR}/.run/id-${1}/rsec" ] && rmdir  "${ROOT_DIR}/.run/id-${1}/rsec"
@@ -172,13 +175,6 @@ get_mpass()
 	# read master password from file,device or sym-link if exists
 	if [ x"${1}" = x ]; then
 		echo "ERROR: Need to specify password"
-		exit -1
-	fi
-	if [ -d "${1}" ]; then
-		echo "ERROR: Please specify the SHARE-SECRET instead of the mount point"
-		echo "   $0 umount <SHARE-SECRET>"
-		echo "or unmount all devices:"
-		echo "   $0 unmount"
 		exit -1
 	fi
 	# Grugq's idea:
@@ -237,11 +233,6 @@ if [ ! -f "${SSH_KEY_FILE}" ]; then
 	chmod 700 "${SSH_KEY_FILE}"
 fi
 
-#if [ ! -d "${ROOT_DIR}" ]; then
-#	print "Failed to access ${ROOT_DIR}. Try 'mkdir -p ${ROOT_DIR}'"
-#	exit -1
-#fi
-
 if [ x"$1" = xinit ] || [ x"$1" = xnew ] || [ x"$1" = xi ]; then
 	if [ x"$2" != x ]; then
 		usage
@@ -280,9 +271,21 @@ elif [ x"$1" = xstop ] || [ x"$1" = xu ] || [ x"$1" = xumount ] || [ x"$1" = xun
 		unmount_all
 		exit 0
 	fi
-	# Unmount by share-secret
-	get_mpass "${2}"
-	derive_secrets "${mpass}"
+	# Unmount by mount point
+	if [ -d "${2}" ]; then
+		if [ ! -f "${2}/.thc.id" ]; then
+			echo "ERROR: Please specify the SHARE-SECRET instead of the mount point"
+			echo "   $0 umount <SHARE-SECRET>"
+			echo "or unmount all devices:"
+			echo "   $0 unmount"
+			exit -1
+		fi
+		RID=`cat "${2}"/.thc.id`
+	else
+		# Unmount by share-secret
+		get_mpass "${2}"
+		derive_secrets "${mpass}"
+	fi
 	unmount "${RID}"
 	exit 0
 elif [ x"$1" = xclean ] || [ x"$1" = xc ]; then
@@ -309,31 +312,14 @@ fi
 get_mpass "${2}"
 derive_secrets "${mpass}"
 
+# Create state/runtime directories
 mkdir -p "${ROOT_DIR}/.run/id-${RID}"
-USER_MOUNT_POINT="${ROOT_DIR}/sec-${RID}"
-ENCFS_MOUNT_POINT="${ROOT_DIR}/.run/id-${RID}/rsec"
-if [ ${#3} -ne 0 ]; then
-	if [ ! -d "${3}" ]; then
-		echo "Directory ${3} does not exist."
-		exit -1
-	fi
-	# Link from the default mount point to the user specified mount point
-	rmdir "${ROOT_DIR}/.run/id-${RID}/rsec" 2>/dev/null
-	ln -sf "${3}" "${ENCFS_MOUNT_POINT}"
-	ENCFS_MOUNT_POINT="${3}"
-	USER_MOUNT_POINT="${ENCFS_MOUNT_POINT}"
-else
-	[ -L "${ROOT_DIR}/.run/id-${RID}/rsec" ] && rm -f "${ROOT_DIR}/.run/id-${RID}/rsec"
-	mkdir -p "${ROOT_DIR}/.run/id-${RID}/rsec"
-fi
-
 
 debug "DEBUG master $MPASS  (r $RSEC e $EPAS rid $RID s $SPAS)"
 
-
 mkdir -p "${ROOT_DIR}/.run/id-${RID}/rfs"
 export SPAS
-# Linux non-root does not allo 'allow_other'
+# Linux non-root does not allow 'allow_other'
 sshfs -p "${THC_RFS_PORT}" -o auto_cache -o ssh_command='ssh -o StrictHostKeyChecking=accept-new' -o default_permissions,password_stdin,idmap=user,uid="${UID}",gid="`id -g \"$USER\"`" rfs-"${RSEC}@${THC_RFS_SERVER}:rw" "${ROOT_DIR}/.run/id-${RID}/rfs" <<<"${SPAS}"
 ret=$?
 unset SPAS
@@ -369,11 +355,33 @@ if [ -f "${ROOT_DIR}/.run/id-${RID}/rfs/motd" ]; then
 	sleep 10
 fi
 
+# Cleanup previous state 
+USER_MOUNT_POINT="${ROOT_DIR}/sec-${RID}"
+ENCFS_MOUNT_POINT="${ROOT_DIR}/.run/id-${RID}/rsec"
+[ -L "${ENCFS_MOUNT_POINT}" ] && rm -f "${ENCFS_MOUNT_POINT}"
+rmdir "${ROOT_DIR}/.run/id-${RID}/rsec" 2>/dev/null
+if [ ${#3} -ne 0 ]; then
+	if [ ! -d "${3}" ]; then
+		echo "Directory ${3} does not exist."
+		exit -1
+	fi
+	# Link from the default mount point to the user specified mount point
+	ln -sf "${3}" "${ENCFS_MOUNT_POINT}"
+	ENCFS_MOUNT_POINT="${3}"
+	USER_MOUNT_POINT="${ENCFS_MOUNT_POINT}"
+else
+	mkdir -p "${ROOT_DIR}/.run/id-${RID}/rsec"
+fi
+
+ENCFS_OPT="-S --standard"
+if [[ x"$OSTYPE" == "xdarwin"* ]]; then
+	ENCFS_OPT="${ENCFS_OPT} -o volname=sec-${RID}"
+fi
 # Securely pass password to encfs...well, as secure as this shit can be.
 # if sshfs failed then "./encrypted" is still a sym-link to /dev/null and
 # sshfs will fail.
 export EPAS
-encfs -S --standard "${ROOT_DIR}/.run/id-${RID}/rfs/encrypted" "${ENCFS_MOUNT_POINT}" <<<"${EPAS}" >/dev/null
+encfs $ENCFS_OPT "${ROOT_DIR}/.run/id-${RID}/rfs/encrypted" "${ENCFS_MOUNT_POINT}" <<<"${EPAS}" >/dev/null
 ret=$?
 unset EPAS
 if [ $ret -ne 0 ]; then
@@ -382,10 +390,13 @@ if [ $ret -ne 0 ]; then
 fi
 
 ln -sf "${ENCFS_MOUNT_POINT}" "${ROOT_DIR}/sec-${RID}"
+debug ln -sf "${ENCFS_MOUNT_POINT}" "${ROOT_DIR}/sec-${RID}"
 if [ $? -ne 0 ]; then
 	unmount "${RID}"
 	exit -1
 fi
 
+# Store the ID. We need this to 'thc-rfs u <mount-point>'
+echo "${RID}" >"${USER_MOUNT_POINT}/.thc.id"
 echo "Encrypted partition mounted to ${USER_MOUNT_POINT}"
 
