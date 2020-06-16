@@ -2,6 +2,7 @@
 An easy-to-use, easy-to-setup, hassle-free secure file system with the encrypted data being stored on a remote cloud server without having to trust the server.
 
 Direct Download: [thc-rfs](https://raw.githubusercontent.com/hackerschoice/thc-rfs-client/master/thc-rfs)  
+Medium Article: [THC's encrypted cloud based file system](https://tiny.cc/thcrfs)  
 Technical Details: [Technical-Details](https://github.com/hackerschoice/thc-rfs-client/wiki/Technical-Details)
 
 The client is a bash-script. The cloud server is provided by THC for free (as in free beer!).
