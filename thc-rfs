@@ -1,6 +1,7 @@
 #! /bin/bash
 
 ROOT_DIR=~/thc
+THC_RFS_VERSION="1.2"
 [ -z "$THC_RFS_SERVER" ] && THC_RFS_SERVER=rfs.thc.org
 [ -z "$THC_RFS_PORT" ] && THC_RFS_PORT=22
 
@@ -62,6 +63,7 @@ debug()
 usage()
 {
 	echo "\
+THC-RFS Version: $THC_RFS_VERSION
 $0 <CMD> [<options>] <share-secret> [<mount-point>]
 
 CMD:
@@ -85,19 +87,20 @@ Unmount a secure remote file system:
 Unmount all secure remote file systems:
     $ $0 umount"
 
-	exit -1
+	exit 1
 }
 
 # Do a dirty base58 from input data (likely to be base64)
 b58sanitize()
 {
-	local CLEAR=`echo "$1" | sed 's/[^a-zA-Z0-9]//g' | sed 's/[0OIl]//g'| head -n1 | cut -c1-$2`
+	local CLEAR
+	CLEAR=$(echo "$1" | sed 's/[^a-zA-Z0-9]//g' | sed 's/[0OIl]//g'| head -n1 | cut -c 1-"$2")
 	if [ ${#CLEAR} -lt "$2" ]; then
 		# This is fatal and should never happen
 		echo "ERROR base58: ${#CLEAR} but length is $2"
-		exit -1
+		exit 1
 	fi
-	echo $CLEAR
+	echo "$CLEAR"
 }
 
 # Converts (user-)input into likely output.
@@ -107,6 +110,7 @@ b58sanitize()
 # I -> 1
 b58convert()
 {
+	# shellcheck disable=SC2020
 	echo "$1" | tr 0OlI oo11
 }
 
@@ -118,39 +122,48 @@ derive_secrets()
 	# RID a local id (short)
 	# EPAS is the encryptino password
 	# SPAS is the ssh login password
-	RSEC=$(b58sanitize "`echo s1\"${1}\" | openssl sha256 -binary | openssl base64`" 16)
-	RID=$(b58sanitize "`echo i2\"${1}\" | openssl sha256 -binary | openssl base64`" 4) 
-	EPAS=$(b58sanitize "`echo s3\"${1}\" | openssl sha256 -binary | openssl base64`" "$ENC_B58_LEN")
-	SPAS=$(b58sanitize "`echo p4\"${1}\" | openssl sha256 -binary | openssl base64`" 16)
+	RSEC=$(b58sanitize "$(echo s1"${1}" | openssl sha256 -binary | openssl base64)" 16)
+	RID=$(b58sanitize "$(echo i2"${1}" | openssl sha256 -binary | openssl base64)" 4) 
+	EPAS=$(b58sanitize "$(echo s3"${1}" | openssl sha256 -binary | openssl base64)" "$ENC_B58_LEN")
+	SPAS=$(b58sanitize "$(echo p4"${1}" | openssl sha256 -binary | openssl base64)" 16)
 }
 
 master_pwd_new()
 {
 	# Create a new Master Password
-	MPASS=$(b58sanitize `dd if=/dev/urandom bs=1 count=48 2>/dev/null | openssl base64` "$ENC_B58_LEN")
+	MPASS=$(b58sanitize "$(dd if=/dev/urandom bs=1 count=48 2>/dev/null | openssl base64)" "$ENC_B58_LEN")
 }
 
 unmount_cmd()
 {
 	# Linux does not accept sym-link as unmount points.
 	REAL_RSEC="${1}"
-	[ -L "${1}" ] && REAL_RSEC=`readlink "${1}"`
+	[ -L "${1}" ] && REAL_RSEC=$(readlink "${1}")
 	if [ x"${HAS_FUSERMOUNT}" = x1 ]; then
 		fusermount -u "${REAL_RSEC}"
+		ret=$?
 	else
 		# Try MacOS way..(fusermount does not exist)
 		umount "${REAL_RSEC}"
+		ret=$?
 	fi
 }
 
 unmount()
 {
-
+	# Do not return if this fails. We like to unmount
+	# rfs regardless if we managed to unmount rsec.
 	unmount_cmd "${ROOT_DIR}/.run/id-${1}/rsec"
-	if [ $? -ne 0 ]; then
-		return
+	if [ $ret -ne 0 ]; then
+		#echo "unmount failed"
+		:
 	fi
 	unmount_cmd "${ROOT_DIR}/.run/id-${1}/rfs"
+	if [ $ret -ne 0 ]; then
+		# unount rfs failed. Leave runtime files....
+		return
+	fi
+	# Clear runtime files if 'rsec' has been unmounted (but only then)
 	[ -L "${ROOT_DIR}/.run/id-${1}/rsec" ] && rm -f  "${ROOT_DIR}/.run/id-${1}/rsec"
 	[ -d "${ROOT_DIR}/.run/id-${1}/rsec" ] && rmdir  "${ROOT_DIR}/.run/id-${1}/rsec"
 	rmdir  "${ROOT_DIR}/.run/id-${1}/rfs"
@@ -164,7 +177,7 @@ unmount_all()
 		if [ ! -d "${x}" ]; then
 			break
 		fi
-		id=`echo "$x" | cut -f2 -d-`
+		id=$(echo "$x" | cut -f2 -d-)
 		debug "Working on '${id}'"
 		unmount "$id"
 	done
@@ -175,21 +188,21 @@ get_mpass()
 	# read master password from file,device or sym-link if exists
 	if [ x"${1}" = x ]; then
 		echo "ERROR: Need to specify password"
-		exit -1
+		exit 1
 	fi
 	# Grugq's idea:
 	if [ x"${1}" = "x-x" ] || [ x"${1}" = "xstdin" ]; then
 		echo -n "Enter SHARE-SECRET: "
-		read mpass
+		read -r mpass
 	elif [ -e "${1}" ]; then
-		read mpass <"${1}"
+		read -r mpass <"${1}"
 	else
 		mpass="${1}"
 	fi
-	mpas=$(b58convert "$mpass")
+	mpass=$(b58convert "$mpass")
 	if [ ${#mpass} -ne "$ENC_B58_LEN" ]; then
 		echo "ERROR. Illegal master password"
-		exit -1
+		exit 1
 	fi
 
 }
@@ -197,8 +210,7 @@ get_mpass()
 # Replace string in file
 replace()
 {
-	grep "$2" "$1" >/dev/null
-	if [ $? -eq 0 ]; then
+	if ! grep "$2" "$1" >/dev/null; then
 		# Pattern found; replace in file
 		sed -i-old "s/$2/$3/g" "$1" >/dev/null
 	fi
@@ -215,14 +227,14 @@ HAS_FUSERMOUNT=1
 command -v fusermount >/dev/null 2>&1 || HAS_FUSERMOUNT=0 
 
 if [[ x"$OSTYPE" == "xdarwin"* ]]; then
-	VER=`sshfs --version 2>&1 | grep ^SSHFS | cut -f3 -d" "`
+	VER=$(sshfs --version 2>&1 | grep ^SSHFS | cut -f3 -d" ")
 	if [ x"$VER" = "x2.9" ]; then
 		echo "
 Buggy SSHFS dedected. Your read performance might be slow.
 Please read https://github.com/osxfuse/sshfs/issues/57 for details.
 
 To fix this please executed:
-    $ sudo curl -sSL https://tiny.cc/apewqz >\""`which sshfs`"\""
+    $ sudo curl -sSL https://tiny.cc/apewqz >\"$(which sshfs)\""
 	fi
 
 fi
@@ -243,10 +255,12 @@ if [ x"$1" = xinit ] || [ x"$1" = xnew ] || [ x"$1" = xi ]; then
 	export THC_SSH_PASSWORD="${SPAS}"
 	export THC_RFS_VERSION="1.1"
 	# Bump the server to create a new file share
+	# shellcheck disable=SC2086 # Allow SSH_PARAM to split into words
 	ssh -p ${THC_RFS_PORT} ${SSH_PARAM} -o SendEnv="THC_RFS_VERSION THC_RFS_TOKEN THC_RFS_SECRET THC_SSH_PASSWORD" rfs-init@${THC_RFS_SERVER}
-	if [ $? -ne 0 ]; then
+	ret=$?
+	if [ $ret -ne 0 ]; then
 		echo "Server problem. Aborting..."
-		exit -1
+		exit 1
 	fi
 	echo "
 --> You MUST remember this SHARE-SECRET. Access to the data is lost <--
@@ -278,9 +292,9 @@ elif [ x"$1" = xstop ] || [ x"$1" = xu ] || [ x"$1" = xumount ] || [ x"$1" = xun
 			echo "   $0 umount <SHARE-SECRET>"
 			echo "or unmount all devices:"
 			echo "   $0 unmount"
-			exit -1
+			exit 1
 		fi
-		RID=`cat "${2}"/.thc.id`
+		RID=$(cat "${2}"/.thc.id)
 	else
 		# Unmount by share-secret
 		get_mpass "${2}"
@@ -318,18 +332,17 @@ mkdir -p "${ROOT_DIR}/.run/id-${RID}"
 debug "DEBUG master $MPASS  (r $RSEC e $EPAS rid $RID s $SPAS)"
 
 mkdir -p "${ROOT_DIR}/.run/id-${RID}/rfs"
-export SPAS
 # Linux non-root does not allow 'allow_other'
-sshfs -p "${THC_RFS_PORT}" -o auto_cache -o ssh_command='ssh -o StrictHostKeyChecking=accept-new' -o default_permissions,password_stdin,idmap=user,uid="${UID}",gid="`id -g`" rfs-"${RSEC}@${THC_RFS_SERVER}:rw" "${ROOT_DIR}/.run/id-${RID}/rfs" <<<"${SPAS}"
+sshfs -p "${THC_RFS_PORT}" -o auto_cache -o ssh_command='ssh -o StrictHostKeyChecking=accept-new' -o default_permissions,password_stdin,idmap=user,uid="${UID}",gid="$(id -g)" rfs-"${RSEC}@${THC_RFS_SERVER}:rw" "${ROOT_DIR}/.run/id-${RID}/rfs" <<<"${SPAS}"
 ret=$?
 unset SPAS
 if [ $ret -ne 0 ]; then
 	# sshfs failed.
 	echo "ERROR: sshfs failed."
 	echo "    1. The volume is already mounted."
-	echo "    2. Wrong master share-secret."
+	echo "    2. Wrong SHARE-SECRET."
 	echo "    3. The server can not be reached."
-	exit -1
+	exit 1
 fi
 
 # Check if the 'encrypted' subdirectory exists
@@ -338,7 +351,7 @@ if [ ! -d "${ROOT_DIR}/.run/id-${RID}/rfs/encrypted" ]; then
 	# This should never happen unless someone delete the 'encrypted'
 	# directory manually.
 	echo "ERROR: File System does not exist. Wrong share-secret?"
-	exit -1
+	exit 1 
 fi
 
 # Increase block-size to 4k to increase EncFS performance (3x on MacOS)
@@ -363,7 +376,8 @@ rmdir "${ROOT_DIR}/.run/id-${RID}/rsec" 2>/dev/null
 if [ ${#3} -ne 0 ]; then
 	if [ ! -d "${3}" ]; then
 		echo "Directory ${3} does not exist."
-		exit -1
+		unmount "${RID}"
+		exit 1 
 	fi
 	# Link from the default mount point to the user specified mount point
 	ln -sf "${3}" "${ENCFS_MOUNT_POINT}"
@@ -380,21 +394,18 @@ fi
 # Securely pass password to encfs...well, as secure as this shit can be.
 # if sshfs failed then "./encrypted" is still a sym-link to /dev/null and
 # sshfs will fail.
-export EPAS
+#
+# shellcheck disable=SC2086 # Allow ENCFS_OPT to split into words
 encfs $ENCFS_OPT "${ROOT_DIR}/.run/id-${RID}/rfs/encrypted" "${ENCFS_MOUNT_POINT}" <<<"${EPAS}" >/dev/null
 ret=$?
 unset EPAS
 if [ $ret -ne 0 ]; then
 	echo "EncFS failed. Aborting..."
-	exit -1
+	unmount "${RID}"
+	exit 1
 fi
 
 ln -sf "${ENCFS_MOUNT_POINT}" "${ROOT_DIR}/sec-${RID}"
-debug ln -sf "${ENCFS_MOUNT_POINT}" "${ROOT_DIR}/sec-${RID}"
-if [ $? -ne 0 ]; then
-	unmount "${RID}"
-	exit -1
-fi
 
 # Store the ID. We need this to 'thc-rfs u <mount-point>'
 echo "${RID}" >"${USER_MOUNT_POINT}/.thc.id"
