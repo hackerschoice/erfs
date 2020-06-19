@@ -7,9 +7,9 @@ Technical Details: [Technical-Details](https://github.com/hackerschoice/thc-rfs-
 
 The client is a bash-script. The cloud server is provided by THC for free (as in free beer!).
 
-There is no limit per user, no limit of the number of file systems and no limit of how many locations can access the same file system simoultanously. It supports colaboration and the same filesystem can be accessed from different computers at the same time. The data is securely and seamlessly synchronized.
+There is no limit per user, no limit of the number of file systems and no limit of how many locations can access the same file system simoultanously. It supports collaboration and the same filesystem can be accessed from different computers at the same time. The data is securely and seamlessly synchronized.
 
-The server has no knowledge of the content. A rogue server operator can not access the data. All key material is created on the user's computer and never stored or transfered to the server.
+The server has no knowledge of the content. A rogue server operator can not access the data. All key material is created on the user's computer and never stored or transferred to the server.
 
 **Features:**  
 - Does not require root or superuser privileges.
