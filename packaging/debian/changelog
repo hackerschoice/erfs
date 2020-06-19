@@ -1,0 +1,5 @@
+thc-rfs-client (1.2-1) unstable; urgency=medium
+
+  * Initial release (closes: #963074)
+
+ -- skyper <skyper@thc.org>  Wed, 17 Jun 2020 10:11:11 +0100

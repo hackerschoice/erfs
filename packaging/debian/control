@@ -1,0 +1,33 @@
+Source: thc-rfs-client
+Section: net
+Priority: optional
+Maintainer: skyper <skyper@thc.org>
+Build-Depends: debhelper-compat (= 13)
+Standards-Version: 4.5.0
+Homepage: https://github.com/hackerschoice/thc-rfs-client
+Rules-Requires-Root: no
+Vcs-Git: https://github.com/hackerschoice/thc-rfs-client.git
+Vcs-Browser: https://github.com/hackerschoice/thc-rfs-client
+
+Package: thc-rfs-client
+Architecture: all
+Depends: encfs,
+	sshfs,
+	${shlibs:Depends},
+	${misc:Depends}
+Description: Client for an encrypted cloud based remote file system
+ An easy-to-use, easy-to-setup, hassle-free secure file system with the
+ encrypted data being stored on a remote cloud server without having to
+ trust the server.
+ .
+ All key material is created on the user's computer and never stored or
+ transferred to the server.
+ .
+ All data is locally encrypted (including the file name). The encrypted
+ data (and only that!) is stored in the cloud. The data remains secure even
+ if the cloud server is compromised. It does not need root or superuser
+ privileges. No need to run your own server. All you need is the bash
+ script (literally). It’s one single command to add and use a
+ file system:
+ .
+ $ thc-rfs mount aDe5F2ik3x35x7pfAEAWdC5Y ~/secure

@@ -1,0 +1,73 @@
+.TH THC-RFS 1 
+.SH NAME
+thc-rfs \- a tool to create an encrypted file system on the cloud
+.SH SYNOPSIS
+.B thc-rfs
+.I "<COMMAND> [-options] <SHARE-SECRET> [<mount-point>]"
+.br
+.SH "DESCRIPTION"
+.B thc-rfs
+is a simple unix utility which creates and mounts an encrypted remote file system. The file system is encrypted locally and the encrypted data is stored in the cloud.
+.P
+The cloud server has no knowledge of the content. A rogue server operator can not access the data. All key material is created on the user's computer and never stored or transferred to the server.
+.P
+It supports collaboration and the same filesystem can be accessed from different computers at the same time. The data is securely and seamlessly synchronized.
+.SH COMMAND
+.TP 13
+.I init
+Initialize (create) a new file system and print the SHARE-SECRET of the newly created file system.
+.TP 13
+.I mount <SHARE-SECRET>
+Mount the encrypted remote file system.
+.TP 13
+.I umount <SHARE-SECRET>
+Unmount the encrypted remote file system. SHARE-SECRET is optional and all filesystems will be unmounted if no specific SHARE-SECRET is given.
+.SH OPTIONS
+.TP 13
+.I \-x read the SHARE-SECRET from standard input.
+.SH SECURITY
+Passing the SHARE-SECRET as command line parameter is insecure. Use the -x option or use (example):
+.P
+$ X=aDe5F2ik3x35x7pfAEAWdC5Y;./thc-rfs m /dev/stdin<<<$X
+.SH COPYRIGHT
+THC-RFS is entirely my own creation, although plenty of other code was used as examples.  It is freely given away to the Internet community in the hope that it will be useful, with no restrictions except giving credit where it is due.  No GPLs, Berkeley copyrights or any of that nonsense.  The author assumes NO responsibility for how anyone uses it.  If netcat makes you rich somehow and you're feeling generous, mail me a check.  If you are affiliated in any way with Microsoft Network, get a life.  Always ski in control.  Comments, questions, and patches to hobbit@avian.org.
+.SH NOTES
+The latest version is available from https://github.com/hackerschoice/thc-rfs-client/.
+.SH BUGS
+Efforts have been made to have thc-rfs "do the right thing" in all its
+various modes.  If you believe that it is doing the wrong thing under
+whatever circumstances, please notify me and tell me how you think it
+should behave. I certainly encourage people to make custom mods and send in any
+improvements they make to it. Continued feedback from the Internet
+community is always welcome!
+.SH EXAMPLES
+Initialize a new encrypted and remote file system:
+.br
+$ thc-rfs init
+.P
+Mount the new file system (replace aDe5F2ik3x35x7pfAEAWdC5Y with the shared secret 'init' step):
+.br
+$ thc-rfs mount aDe5F2ik3x35x7pfAEAWdC5Y
+.P
+or mount to a specific mount-point (~/secure-drive):
+.br
+$ mkdir ~/secure-drive
+.br
+$ thc-rfs mount aDe5F2ik3x35x7pfAEAWdC5Y ~/secure-drive
+.P
+Unmount the file system:
+.br
+$ thc-rfs umount ~/secure-drive
+.P
+or unmount the file system by specifying the SHARE-SECRET:
+.br
+$ thc-rfs umount aDe5F2ik3x35x7pfAEAWdC5Y
+.P
+or unmount all encrypted file systems:
+.br
+$ thc-rfs umount
+
+.SH AUTHOR
+This manual page was written by skyper <skyper@thc.org>.
+.P
+THC-RFS was written by skyper <skyper@thc.org>.
