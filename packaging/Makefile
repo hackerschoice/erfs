@@ -28,6 +28,9 @@ debian-debuild: debuild-setup
 	debuild -S
 	lintian --pedantic -IE build/${BIN_NAME}-client_*.dsc
 
+clean:
+	rm -rf ./build ./${PKG_NAME}.tar.gz
+
 debian: debian-debuild
 	echo Done.
 
