@@ -1,5 +1,5 @@
-thc-rfs-client (1.2-1) unstable; urgency=medium
+erfs-client (1.3-1) unstable; urgency=medium
 
-  * Initial release (closes: #963074)
+  * Initial release (closes: #963527)
 
  -- skyper <skyper@thc.org>  Wed, 17 Jun 2020 10:11:11 +0100

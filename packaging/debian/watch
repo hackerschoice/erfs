@@ -1,10 +1,3 @@
 version=4
-opts=filenamemangle=s/.+\/v?(\d\S+)\.tar\.gz/thc-rfs-client-$1\.tar\.gz/ \
-  https://github.com/hackerschoice/thc-rfs-client/tags .*/v?(\d\S+)\.tar\.gz
-# Below does not work. Work's at home but uscan . fails:
-# $ perl -e 'while (<>) { print "$1\n" if /.*(\d\S+)\.tar\.gz/; }'
-# https://github.com/hackerschoice/thc-rfs-client/releases/download/1.2/thc-rfs-client-1.2.tar.gz
-# 1.2
-# 
-#opts=filenamemangle=s/.+\/v?(\d\S+)\.tar\.gz/thc-rfs-client-$1\.tar\.gz/ \
-#  https://github.com/hackerschoice/thc-rfs-client/releases/latest .*/(\d\S+)\.tar\.gz
+opts=filenamemangle=s/.+\/v?(\d\S+)\.tar\.gz/erfs-client-$1\.tar\.gz/ \
+  https://github.com/hackerschoice/erfs-client/tags .*/v?(\d\S+)\.tar\.gz

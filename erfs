@@ -407,7 +407,7 @@ fi
 
 ln -sf "${ENCFS_MOUNT_POINT}" "${ROOT_DIR}/sec-${RID}"
 
-# Store the ID. We need this to 'thc-rfs u <mount-point>'
+# Store the ID. We need this to 'erfs u <mount-point>'
 echo "${RID}" >"${USER_MOUNT_POINT}/.thc.id"
 echo "Encrypted partition mounted to ${USER_MOUNT_POINT}"
 
