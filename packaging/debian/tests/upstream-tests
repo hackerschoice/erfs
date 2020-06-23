@@ -2,5 +2,5 @@
 set -e
 
 # Hmm. Let's try to run a mount test..
-/usr/bin/thc-rfs m aDe5F2ik3x35x7pfAEAWdC5Y 
-/usr/bin/thc-rfs u aDe5F2ik3x35x7pfAEAWdC5Y
+/usr/bin/erfs m aDe5F2ik3x35x7pfAEAWdC5Y 
+/usr/bin/erfs u aDe5F2ik3x35x7pfAEAWdC5Y
