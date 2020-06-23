@@ -1,9 +1,9 @@
-# thc-rfs-client
+# erfs-client
 An easy-to-use, easy-to-setup, hassle-free secure file system with the encrypted data being stored on a remote cloud server without having to trust the server.
 
-Direct Download: [thc-rfs](https://raw.githubusercontent.com/hackerschoice/thc-rfs-client/master/thc-rfs)  
+Direct Download: [erfs](https://raw.githubusercontent.com/hackerschoice/erfs-client/master/erfs)  
 Medium Article: [THC's encrypted cloud based file system](https://tiny.cc/thcrfs)  
-Technical Details: [Technical-Details](https://github.com/hackerschoice/thc-rfs-client/wiki/Technical-Details)
+Technical Details: [Technical-Details](https://github.com/hackerschoice/erfs-client/wiki/Technical-Details)
 
 The client is a bash-script. The cloud server is provided by THC for free (as in free beer!).
 
@@ -35,21 +35,21 @@ $ apt-get install -y git sshfs encfs
 
 **Installation**
 ```ShellSession
-$ git clone https://github.com/hackerschoice/thc-rfs-client.git
-$ export PATH=$PATH:${PWD}/thc-rfs-client
+$ git clone https://github.com/hackerschoice/erfs-client.git
+$ export PATH=$PATH:${PWD}/erfs-client
 ```
 
 or if you do not have git:
 ```ShellSession
-$ wget https://raw.githubusercontent.com/hackerschoice/thc-rfs-client/master/thc-rfs
-$ curl -OL https://raw.githubusercontent.com/hackerschoice/thc-rfs-client/master/thc-rfs
+$ wget https://raw.githubusercontent.com/hackerschoice/erfs-client/master/erfs
+$ curl -OL https://raw.githubusercontent.com/hackerschoice/erfs-client/master/erfs
 ```
 
 **Usage**
 
 Create a SHARE-SECRET and initialize a new File Share (example):
 ```ShellSession
-$ thc-rfs init
+$ erfs init
 Server: Creating a new Remote File Share....
 
 --> You MUST remember this SHARE-SECRET. Access to the data is lost <--
@@ -64,7 +64,7 @@ Server: Creating a new Remote File Share....
 
 Mount the Remote File Share on your computer (example):
 ```ShellSession
-$ thc-rfs mount aDe5F2ik3x35x7pfAEAWdC5Y ~/secure
+$ erfs mount aDe5F2ik3x35x7pfAEAWdC5Y ~/secure
 Encrypted partition mounted to /Users/me/secure
 $ ls -al ~/secure
 ```
@@ -74,7 +74,7 @@ The server does not have access to the SHARE-SECRET or the data. Keep the SHARE-
 ---
 Unmount everything:
 ```ShellSession
-$ thc-rfs umount <SHARE-SECRET>
+$ erfs umount <SHARE-SECRET>
 ```
 
 ---
@@ -82,7 +82,7 @@ $ thc-rfs umount <SHARE-SECRET>
 
 If you receive a SHARE-SECRET then you can access somebody else's secure share and collaborate at the same time. 
 ```ShellSession
-$ thc-rfs mount <SHARE-SECRET>
+$ erfs mount <SHARE-SECRET>
 ```
 
 ---
@@ -91,7 +91,7 @@ $ thc-rfs mount <SHARE-SECRET>
 Passing SHARE-SECRET using the command line parameter is not secure. A better way is:
 ```ShellSession
 $ X=<SHARE-SECRET>
-$ thc-rfs mount /dev/stdin <<<"$X"
+$ erfs mount /dev/stdin <<<"$X"
 $ unset X
 ```
 
@@ -108,23 +108,23 @@ $ export THC_RFS_PORT=2222
 
 Prompting for the SHARE-SECRET (Grugq's idea):
 ```ShellSession
-$ thc-rfs mount -x
+$ erfs mount -x
 Enter SHARE-SECRET: 
 ```
 
 Reading SHARE-SECRET from a file. Put this into your ~/.bashrc to mount the file system every time you log in:
 ```ShellSession
-$ thc-rfs mount my-share-secret.txt
+$ erfs mount my-share-secret.txt
 ```
 
 Shorten the commands:
 ```ShellSession
-$ thc-rfs i
-$ thc-rfs m
-$ thc-rfs u
+$ erfs i
+$ erfs m
+$ erfs u
 ```
 
 ---
 **Running your own sever**
 
-You are encouraged to run your own server. This is optional. Please refer to [hackerschoice/docker-thc-rfs-server](https://github.com/hackerschoice/docker-thc-rfs-server) for more information.
+You are encouraged to run your own server. This is optional. Please refer to [hackerschoice/docker-erfs-server](https://github.com/hackerschoice/docker-erfs-server) for more information.
