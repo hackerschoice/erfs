@@ -6,8 +6,6 @@ Build-Depends: debhelper-compat (= 13)
 Standards-Version: 4.5.0
 Homepage: https://github.com/hackerschoice/erfs-client
 Rules-Requires-Root: no
-Vcs-Git: https://github.com/hackerschoice/erfs-client.git
-Vcs-Browser: https://github.com/hackerschoice/erfs-client
 
 Package: erfs-client
 Architecture: all
