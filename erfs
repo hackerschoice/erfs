@@ -1,7 +1,7 @@
 #! /bin/bash
 
 ROOT_DIR=~/thc
-THC_RFS_VERSION="1.2"
+THC_RFS_VERSION="1.3"
 [ -z "$THC_RFS_SERVER" ] && THC_RFS_SERVER=rfs.thc.org
 [ -z "$THC_RFS_PORT" ] && THC_RFS_PORT=22
 
