@@ -63,7 +63,7 @@ debug()
 usage()
 {
 	echo "\
-THC-RFS Version: $THC_RFS_VERSION
+ERFS Version: $THC_RFS_VERSION
 $0 <CMD> [<options>] <share-secret> [<mount-point>]
 
 CMD:
