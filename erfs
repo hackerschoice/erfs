@@ -114,6 +114,18 @@ b58convert()
 	echo "$1" | tr 0OlI oo11
 }
 
+# Sanitize mount point
+mp_sanitize()
+{
+	local CLEAR
+	CLEAR="${1}"
+	# If you like to have awkward characters in your mount point
+	# (mkdir "~.../;id|-") then you can remove the next line at your
+	# own risk, fool. You have been warned...
+	CLEAR="${1//[^a-zA-Z0-9_- /]/}"
+	echo "$CLEAR"
+}
+
 # Deterministic secret from Master-Secret
 derive_secrets()
 {
@@ -140,34 +152,42 @@ unmount_cmd()
 	REAL_RSEC="${1}"
 	[ -L "${1}" ] && REAL_RSEC=$(readlink "${1}")
 	if [ x"${HAS_FUSERMOUNT}" = x1 ]; then
-		fusermount -u "${REAL_RSEC}"
+		fusermount -uz "${REAL_RSEC}"
 		ret=$?
 	else
 		# Try MacOS way..(fusermount does not exist)
-		umount "${REAL_RSEC}"
+		umount -f "${REAL_RSEC}"
 		ret=$?
 	fi
 }
 
 unmount()
 {
+	# Three cases to consider:
+	# 1. Unmount fails because mount-point is busy.
+	#    -> Do not clear runtime files
+	# 2. Unmount fails because mount-point directory does not exist
+	#    -> Clear runtime files
+	# 3. Unmount fails because mount-point is already unmounted
+	#    -> Clear runtime files
+
 	# Do not return if this fails. We like to unmount
 	# rfs regardless if we managed to unmount rsec.
 	unmount_cmd "${ROOT_DIR}/.run/id-${1}/rsec"
 	if [ $ret -ne 0 ]; then
-		#echo "unmount failed"
+		#echo "unmount rsec failed"
 		:
 	fi
-	unmount_cmd "${ROOT_DIR}/.run/id-${1}/rfs"
-	if [ $ret -ne 0 ]; then
-		# unount rfs failed. Leave runtime files....
-		return
-	fi
-	# Clear runtime files if 'rsec' has been unmounted (but only then)
 	[ -L "${ROOT_DIR}/.run/id-${1}/rsec" ] && rm -f  "${ROOT_DIR}/.run/id-${1}/rsec"
 	[ -d "${ROOT_DIR}/.run/id-${1}/rsec" ] && rmdir  "${ROOT_DIR}/.run/id-${1}/rsec"
-	rmdir  "${ROOT_DIR}/.run/id-${1}/rfs"
-	rmdir "${ROOT_DIR}/.run/id-${1}"
+	unmount_cmd "${ROOT_DIR}/.run/id-${1}/rfs"
+	if [ $ret -ne 0 ]; then
+		# unmount rfs failed.
+		:
+	fi
+	# Clear runtime files if 'rsec' has been unmounted (but only then)
+	[ -d "${ROOT_DIR}/.run/id-${1}/rfs" ] && rmdir  "${ROOT_DIR}/.run/id-${1}/rfs"
+	rmdir "${ROOT_DIR}/.run/id-${1}" 2>/dev/null
 	rm -f "${ROOT_DIR}/sec-${1}"
 }
 
@@ -242,7 +262,7 @@ fi
 mkdir -p "${ROOT_DIR}"
 if [ ! -f "${SSH_KEY_FILE}" ]; then
 	echo "${SSH_PRIV_KEY}" >"${SSH_KEY_FILE}"
-	chmod 700 "${SSH_KEY_FILE}"
+	chmod 600 "${SSH_KEY_FILE}"
 fi
 
 if [ x"$1" = xinit ] || [ x"$1" = xnew ] || [ x"$1" = xi ]; then
@@ -287,14 +307,16 @@ elif [ x"$1" = xstop ] || [ x"$1" = xu ] || [ x"$1" = xumount ] || [ x"$1" = xun
 	fi
 	# Unmount by mount point
 	if [ -d "${2}" ]; then
-		if [ ! -f "${2}/.thc.id" ]; then
+		MPOINT=$(mp_sanitize "${2}")
+		if [ ! -f "${MPOINT}/.thc.id" ]; then
 			echo "ERROR: Please specify the SHARE-SECRET instead of the mount point"
 			echo "   $0 umount <SHARE-SECRET>"
 			echo "or unmount all devices:"
 			echo "   $0 unmount"
 			exit 1
 		fi
-		RID=$(cat "${2}"/.thc.id)
+		RID=$(cat "${MPOINT}"/.thc.id)
+		unset MPOINT
 	else
 		# Unmount by share-secret
 		get_mpass "${2}"
@@ -333,7 +355,7 @@ debug "DEBUG master $MPASS  (r $RSEC e $EPAS rid $RID s $SPAS)"
 
 mkdir -p "${ROOT_DIR}/.run/id-${RID}/rfs"
 # Linux non-root does not allow 'allow_other'
-sshfs -p "${THC_RFS_PORT}" -o auto_cache -o ssh_command='ssh -o StrictHostKeyChecking=accept-new' -o default_permissions,password_stdin,idmap=user,uid="${UID}",gid="$(id -g)" rfs-"${RSEC}@${THC_RFS_SERVER}:rw" "${ROOT_DIR}/.run/id-${RID}/rfs" <<<"${SPAS}"
+sshfs -p "${THC_RFS_PORT}" -o ServerAliveInterval=30,reconnect,attr_timeout=60,auto_cache,compression=no -o ssh_command='ssh -o StrictHostKeyChecking=accept-new' -o default_permissions,password_stdin,idmap=user,uid="${UID}",gid="$(id -g)" rfs-"${RSEC}@${THC_RFS_SERVER}:rw" "${ROOT_DIR}/.run/id-${RID}/rfs" <<<"${SPAS}"
 ret=$?
 unset SPAS
 if [ $ret -ne 0 ]; then
@@ -374,26 +396,29 @@ ENCFS_MOUNT_POINT="${ROOT_DIR}/.run/id-${RID}/rsec"
 [ -L "${ENCFS_MOUNT_POINT}" ] && rm -f "${ENCFS_MOUNT_POINT}"
 rmdir "${ROOT_DIR}/.run/id-${RID}/rsec" 2>/dev/null
 if [ ${#3} -ne 0 ]; then
-	if [ ! -d "${3}" ]; then
-		echo "Directory ${3} does not exist."
+	MPOINT=$(mp_sanitize "${3}")
+	if [ ! -d "${MPOINT}" ]; then
+		echo "Directory ${MPOINT} does not exist."
 		unmount "${RID}"
 		exit 1 
 	fi
 	# Link from the default mount point to the user specified mount point
-	ln -sf "${3}" "${ENCFS_MOUNT_POINT}"
-	ENCFS_MOUNT_POINT="${3}"
+	ln -sf "${MPOINT}" "${ENCFS_MOUNT_POINT}"
+	ENCFS_MOUNT_POINT="${MPOINT}"
 	USER_MOUNT_POINT="${ENCFS_MOUNT_POINT}"
+	unset MPOINT
 else
 	mkdir -p "${ROOT_DIR}/.run/id-${RID}/rsec"
 fi
 
 ENCFS_OPT="-S --standard"
 if [[ x"$OSTYPE" == "xdarwin"* ]]; then
-	ENCFS_OPT="${ENCFS_OPT} -o volname=sec-${RID}"
+#	ENCFS_OPT="${ENCFS_OPT} -o volname=sec-${RID}"
+	CLEAR="${USER_MOUNT_POINT//[^a-zA-Z0-9_\/-]/}"
+	VOLNAME="$(basename "${CLEAR}")"
+	ENCFS_OPT="${ENCFS_OPT} -o volname=${VOLNAME}"
 fi
 # Securely pass password to encfs...well, as secure as this shit can be.
-# if sshfs failed then "./encrypted" is still a sym-link to /dev/null and
-# sshfs will fail.
 #
 # shellcheck disable=SC2086 # Allow ENCFS_OPT to split into words
 encfs $ENCFS_OPT "${ROOT_DIR}/.run/id-${RID}/rfs/encrypted" "${ENCFS_MOUNT_POINT}" <<<"${EPAS}" >/dev/null
