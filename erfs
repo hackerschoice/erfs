@@ -354,8 +354,13 @@ mkdir -p "${ROOT_DIR}/.run/id-${RID}"
 debug "DEBUG master $MPASS  (r $RSEC e $EPAS rid $RID s $SPAS)"
 
 mkdir -p "${ROOT_DIR}/.run/id-${RID}/rfs"
+SSHFS_OPT="-o ServerAliveInterval=30,reconnect,attr_timeout=60,auto_cache,compression=no"
+if [[ x"$OSTYPE" == "xdarwin"* ]]; then
+	SSHFS_OPT="${SSHFS_OPT} -o iosize=65536,noappledouble,noapplexattr"
+fi
 # Linux non-root does not allow 'allow_other'
-sshfs -p "${THC_RFS_PORT}" -o ServerAliveInterval=30,reconnect,attr_timeout=60,auto_cache,compression=no -o ssh_command='ssh -o StrictHostKeyChecking=accept-new' -o default_permissions,password_stdin,idmap=user,uid="${UID}",gid="$(id -g)" rfs-"${RSEC}@${THC_RFS_SERVER}:rw" "${ROOT_DIR}/.run/id-${RID}/rfs" <<<"${SPAS}"
+# shellcheck disable=SC2086 # Allow SSHFS_OPT to split into words
+sshfs -p "${THC_RFS_PORT}" ${SSHFS_OPT} -o ssh_command='ssh -o StrictHostKeyChecking=accept-new' -o default_permissions,password_stdin,idmap=user,uid="${UID}",gid="$(id -g)" rfs-"${RSEC}@${THC_RFS_SERVER}:rw" "${ROOT_DIR}/.run/id-${RID}/rfs" <<<"${SPAS}"
 ret=$?
 unset SPAS
 if [ $ret -ne 0 ]; then
@@ -416,7 +421,7 @@ if [[ x"$OSTYPE" == "xdarwin"* ]]; then
 #	ENCFS_OPT="${ENCFS_OPT} -o volname=sec-${RID}"
 	CLEAR="${USER_MOUNT_POINT//[^a-zA-Z0-9_\/-]/}"
 	VOLNAME="$(basename "${CLEAR}")"
-	ENCFS_OPT="${ENCFS_OPT} -o volname=${VOLNAME}"
+	ENCFS_OPT="${ENCFS_OPT} -o volname=${VOLNAME},noappledouble,noapplexattr"
 fi
 # Securely pass password to encfs...well, as secure as this shit can be.
 #
