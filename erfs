@@ -422,7 +422,7 @@ if [[ x"$OSTYPE" == "xdarwin"* ]]; then
 #	ENCFS_OPT="${ENCFS_OPT} -o volname=sec-${RID}"
 	CLEAR="${USER_MOUNT_POINT//[^a-zA-Z0-9_\/-]/}"
 	VOLNAME="$(basename "${CLEAR}")"
-	FUSE_OPT="${FUSE_OPT} -o volname=${VOLNAME},iosize=65536,async,noappledouble,noapplexattr"
+	FUSE_OPT="${FUSE_OPT} -o volname=${VOLNAME},iosize=65536,async,noappledouble,noapplexattr,local"
 fi
 # Securely pass password to encfs...well, as secure as this shit can be.
 #
