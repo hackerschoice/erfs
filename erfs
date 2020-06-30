@@ -416,17 +416,18 @@ else
 	mkdir -p "${ROOT_DIR}/.run/id-${RID}/rsec"
 fi
 
-ENCFS_OPT="-S --standard"
+ENCFS_OPT="-S --standard --no-default-flags"
+FUSE_OPT="-o use_ino,default_permissions"
 if [[ x"$OSTYPE" == "xdarwin"* ]]; then
 #	ENCFS_OPT="${ENCFS_OPT} -o volname=sec-${RID}"
 	CLEAR="${USER_MOUNT_POINT//[^a-zA-Z0-9_\/-]/}"
 	VOLNAME="$(basename "${CLEAR}")"
-	ENCFS_OPT="${ENCFS_OPT} -o volname=${VOLNAME},noappledouble,noapplexattr"
+	FUSE_OPT="${FUSE_OPT} -o volname=${VOLNAME},iosize=65536,async,noappledouble,noapplexattr"
 fi
 # Securely pass password to encfs...well, as secure as this shit can be.
 #
 # shellcheck disable=SC2086 # Allow ENCFS_OPT to split into words
-encfs $ENCFS_OPT "${ROOT_DIR}/.run/id-${RID}/rfs/encrypted" "${ENCFS_MOUNT_POINT}" <<<"${EPAS}" >/dev/null
+encfs ${ENCFS_OPT} "${ROOT_DIR}/.run/id-${RID}/rfs/encrypted" "${ENCFS_MOUNT_POINT}" -- ${FUSE_OPT} <<<"${EPAS}" >/dev/null
 ret=$?
 unset EPAS
 if [ $ret -ne 0 ]; then
