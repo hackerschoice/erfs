@@ -108,7 +108,7 @@ The tool relies on the underlying security of ssh, sshfs and EncFS.
 
 Open a Terminal: Applications > Utilities > Terminal. Install Homebew by typing this command:
 ```
-$ ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+$ /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
 ```
 
 Install encfs and sshfs
