@@ -103,6 +103,7 @@ The tool relies on the underlying security of ssh, sshfs and EncFS.
 
 ---
 **Pre-Requisite - MacOS**
+
 Open a Terminal: Applications > Utilities > Terminal. Install Homebew by typing this command:
 ```
 $ ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
@@ -116,6 +117,7 @@ $ brew install homebrew/fuse/encfs
 ```
 
 **Automatically mount share on every login - MacOS**
+
 1. Create '~/Library/Startup' with this content:
 ```
 #! /bin/bash
