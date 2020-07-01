@@ -42,6 +42,7 @@ $ sudo cp erfs-client/erfs /usr/local/bin
 or if you do not have git:
 ```ShellSession
 $ sudo curl -o /usr/local/bin/erfs -OL https://raw.githubusercontent.com/hackerschoice/erfs-client/master/erfs
+$ sudo chmod +x /usr/local/bin/erfs
 ```
 
 **Usage**
