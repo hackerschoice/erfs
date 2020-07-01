@@ -1,9 +1,18 @@
 #! /bin/bash
 
 ROOT_DIR=~/thc
-THC_RFS_VERSION="1.3"
+THC_RFS_VERSION="1.4"
 [ -z "$THC_RFS_SERVER" ] && THC_RFS_SERVER=rfs.thc.org
 [ -z "$THC_RFS_PORT" ] && THC_RFS_PORT=22
+
+FUSE_OPT=""
+if [[ x"$OSTYPE" == "xdarwin"* ]]; then
+	# Setting 'noapplexattr' prevents 'finder' from copying.
+	FUSE_OPT="${FUSE_OPT} -o iosize=65536,noappledouble"
+fi
+# Turn of compression. All transfered data is encrypted and thus cant be compressed.
+SSHFS_OPT="-o ServerAliveInterval=30,reconnect,attr_timeout=60,auto_cache,compression=no,default_permissions"
+SSHFS_OPT="${SSHFS_OPT} ${FUSE_OPT}"
 
 # l(58^44)/l(2) == 257 Bit
 ENC_B58_LEN=44
@@ -354,13 +363,9 @@ mkdir -p "${ROOT_DIR}/.run/id-${RID}"
 debug "DEBUG master $MPASS  (r $RSEC e $EPAS rid $RID s $SPAS)"
 
 mkdir -p "${ROOT_DIR}/.run/id-${RID}/rfs"
-SSHFS_OPT="-o ServerAliveInterval=30,reconnect,attr_timeout=60,auto_cache,compression=no"
-if [[ x"$OSTYPE" == "xdarwin"* ]]; then
-	SSHFS_OPT="${SSHFS_OPT} -o iosize=65536,noappledouble,noapplexattr"
-fi
 # Linux non-root does not allow 'allow_other'
 # shellcheck disable=SC2086 # Allow SSHFS_OPT to split into words
-sshfs -p "${THC_RFS_PORT}" ${SSHFS_OPT} -o ssh_command='ssh -o StrictHostKeyChecking=accept-new' -o default_permissions,password_stdin,idmap=user,uid="${UID}",gid="$(id -g)" rfs-"${RSEC}@${THC_RFS_SERVER}:rw" "${ROOT_DIR}/.run/id-${RID}/rfs" <<<"${SPAS}"
+sshfs -p "${THC_RFS_PORT}" ${SSHFS_OPT} -o ssh_command='ssh -o StrictHostKeyChecking=accept-new' -o password_stdin,idmap=user,uid="${UID}",gid="$(id -g)" rfs-"${RSEC}@${THC_RFS_SERVER}:rw" "${ROOT_DIR}/.run/id-${RID}/rfs" <<<"${SPAS}"
 ret=$?
 unset SPAS
 if [ $ret -ne 0 ]; then
@@ -417,12 +422,11 @@ else
 fi
 
 ENCFS_OPT="-S --standard --no-default-flags"
-FUSE_OPT="-o use_ino,default_permissions"
+FUSE_OPT="${FUSE_OPT} -o use_ino,default_permissions"
 if [[ x"$OSTYPE" == "xdarwin"* ]]; then
-#	ENCFS_OPT="${ENCFS_OPT} -o volname=sec-${RID}"
 	CLEAR="${USER_MOUNT_POINT//[^a-zA-Z0-9_\/-]/}"
 	VOLNAME="$(basename "${CLEAR}")"
-	FUSE_OPT="${FUSE_OPT} -o volname=${VOLNAME},iosize=65536,async,noappledouble,noapplexattr,local"
+	FUSE_OPT="${FUSE_OPT} -o volname=${VOLNAME},async,local"
 fi
 # Securely pass password to encfs...well, as secure as this shit can be.
 #
