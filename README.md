@@ -115,7 +115,7 @@ Install encfs and sshfs
 ```
 $ brew cask install osxfuse
 $ brew install sshfs
-$ brew install homebrew/fuse/encfs
+$ brew install encfs
 ```
 
 Make sure to use sshfs version 2.10 or above or your speed will be 0.2Mbit ([Bug #57](https://github.com/osxfuse/sshfs/issues/57)):
