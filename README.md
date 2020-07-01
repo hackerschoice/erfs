@@ -27,11 +27,12 @@ The server has no knowledge of the content. A rogue server operator can not acce
 *By using our server ("the service") you agree that you will only use the service for research or for doing good things. You agree that you will not use the service for illegal activities. If in doubt then please run your own server.*
 
 ---
-**Pre-Requisite**
+**Pre-Requisite - Linux**
 ```ShellSession
 $ apt-get update -y
 $ apt-get install -y git sshfs encfs
 ```
+(MacOS Users please read below)
 
 **Installation**
 ```ShellSession
