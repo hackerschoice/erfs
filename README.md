@@ -118,9 +118,12 @@ $ brew install sshfs
 $ brew install homebrew/fuse/encfs
 ```
 
-Speedup for MacOS (Fixes [Bug #57](https://github.com/osxfuse/sshfs/issues/57)):
+Make sure to use sshfs version 2.10 or above or your speed will be 0.2Mbit ([Bug #57](https://github.com/osxfuse/sshfs/issues/57)):
 ```
-$ sudo curl -sSL https://tiny.cc/apewqz >"$(which sshfs)"
+$ sshfs --version
+SSHFS version 2.10
+OSXFUSE 3.10.6
+FUSE library version: 2.9.7
 ```
 
 **Automatically mount share on every login - MacOS**
