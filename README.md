@@ -118,9 +118,9 @@ $ brew install sshfs
 $ brew install homebrew/fuse/encfs
 ```
 
-Speedup your sshfs:
+Speedup for MacOS (Fixes [Bug #57](https://github.com/osxfuse/sshfs/issues/57)):
 ```
-$ sudo curl -sSL https://tiny.cc/apewqz >\"$(which sshfs)\"
+$ sudo curl -sSL https://tiny.cc/apewqz >"$(which sshfs)"
 ```
 
 **Automatically mount share on every login - MacOS**
