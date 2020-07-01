@@ -36,13 +36,12 @@ $ apt-get install -y git sshfs encfs
 **Installation**
 ```ShellSession
 $ git clone https://github.com/hackerschoice/erfs-client.git
-$ export PATH=$PATH:${PWD}/erfs-client
+$ sudo cp erfs-client/erfs /usr/local/bin
 ```
 
 or if you do not have git:
 ```ShellSession
-$ wget https://raw.githubusercontent.com/hackerschoice/erfs-client/master/erfs
-$ curl -OL https://raw.githubusercontent.com/hackerschoice/erfs-client/master/erfs
+$ sudo curl -o /usr/local/bin/erfs -OL https://raw.githubusercontent.com/hackerschoice/erfs-client/master/erfs
 ```
 
 **Usage**
@@ -69,18 +68,23 @@ Encrypted partition mounted to /Users/me/secure
 $ ls -al ~/secure
 ```
 
+Unmount the share:
+```ShellSession
+$ erfs umount ~/secure
+```
+
 The server does not have access to the SHARE-SECRET or the data. Keep the SHARE-SECRET secure. Anyone with the knowledge of the SHARE-SECRET can access the data.
 
 ---
 Unmount everything:
 ```ShellSession
-$ erfs umount <SHARE-SECRET>
+$ erfs umount
 ```
 
 ---
-**Sharing**
+**Collaborating**
 
-If you receive a SHARE-SECRET then you can access somebody else's secure share and collaborate at the same time. 
+If you receive a SHARE-SECRET from somebody then you can access their secure share simoultanously. 
 ```ShellSession
 $ erfs mount <SHARE-SECRET>
 ```
@@ -98,6 +102,25 @@ $ unset X
 The tool relies on the underlying security of ssh, sshfs and EncFS.
 
 ---
+**Automatically mount share on every login - MacOS**
+1. Create '~/Library/Startup' with this content:
+```
+#! /bin/bash
+erfs mount <SHARE-SECRET>
+```
+
+2. Make it executeable: `chmod +x ~/Library/Startup`. 
+
+3. Add this file in System Preferences > Users & Groups > Login Items
+
+**Automatically mount share on every login - Linux**
+
+Put this into your ~/.bashrc to mount the file system every time you log in and put your SHARE-SECRET into my-share-secret.txt:
+```ShellSession
+$ erfs mount my-share-secret.txt
+```
+
+---
 **Tips**
 
 Using a different server:
@@ -110,11 +133,6 @@ Prompting for the SHARE-SECRET (Grugq's idea):
 ```ShellSession
 $ erfs mount -x
 Enter SHARE-SECRET: 
-```
-
-Reading SHARE-SECRET from a file. Put this into your ~/.bashrc to mount the file system every time you log in:
-```ShellSession
-$ erfs mount my-share-secret.txt
 ```
 
 Shorten the commands:
