@@ -73,13 +73,12 @@ Unmount the share:
 $ erfs umount ~/secure
 ```
 
-The server does not have access to the SHARE-SECRET or the data. Keep the SHARE-SECRET secure. Anyone with the knowledge of the SHARE-SECRET can access the data.
-
----
 Unmount everything:
 ```ShellSession
 $ erfs umount
 ```
+
+The server does not have access to the SHARE-SECRET or the data. Keep the SHARE-SECRET secure. Anyone with the knowledge of the SHARE-SECRET can access the data.
 
 ---
 **Collaborating**
