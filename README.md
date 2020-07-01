@@ -32,7 +32,7 @@ The server has no knowledge of the content. A rogue server operator can not acce
 $ apt-get update -y
 $ apt-get install -y git sshfs encfs
 ```
-(MacOS Users please read below)
+(MacOS Users please [read below](#macos_install))
 
 **Installation**
 ```ShellSession
@@ -103,6 +103,7 @@ $ unset X
 The tool relies on the underlying security of ssh, sshfs and EncFS.
 
 ---
+<a id="macos_install"></a>
 **Pre-Requisite - MacOS**
 
 Open a Terminal: Applications > Utilities > Terminal. Install Homebew by typing this command:
