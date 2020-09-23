@@ -108,14 +108,14 @@ The tool relies on the underlying security of ssh, sshfs and EncFS.
 
 Open a Terminal: Applications > Utilities > Terminal. Install Homebew by typing this command:
 ```
-$ ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+$ /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
 ```
 
 Install encfs and sshfs
 ```
 $ brew cask install osxfuse
 $ brew install sshfs
-$ brew install homebrew/fuse/encfs
+$ brew install encfs
 ```
 
 Make sure to use sshfs version 2.10 or above or your speed will be 0.2Mbit ([Bug #57](https://github.com/osxfuse/sshfs/issues/57)):
