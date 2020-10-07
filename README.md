@@ -1,9 +1,9 @@
-# erfs-client
+# erfs
 An easy-to-use, easy-to-setup, hassle-free secure file system with the encrypted data being stored on a remote cloud server without having to trust the server.
 
-Direct Download: [erfs](https://raw.githubusercontent.com/hackerschoice/erfs-client/master/erfs)  
+Direct Download: [erfs](https://raw.githubusercontent.com/hackerschoice/erfs/master/erfs)  
 Medium Article: [THC's encrypted cloud based file system](https://tiny.cc/thcrfs)  
-Technical Details: [Technical-Details](https://github.com/hackerschoice/erfs-client/wiki/Technical-Details)
+Technical Details: [Technical-Details](https://github.com/hackerschoice/erfs/wiki/Technical-Details)
 
 The client is a bash-script. The cloud server is provided by THC for free (as in free beer!).
 
@@ -36,13 +36,13 @@ $ apt-get install -y git sshfs encfs
 
 **Installation**
 ```ShellSession
-$ git clone https://github.com/hackerschoice/erfs-client.git
-$ sudo cp erfs-client/erfs /usr/local/bin
+$ git clone https://github.com/hackerschoice/erfs.git
+$ sudo cp erfs/erfs /usr/local/bin
 ```
 
 or:
 ```ShellSession
-$ sudo curl -o /usr/local/bin/erfs -OL https://raw.githubusercontent.com/hackerschoice/erfs-client/master/erfs
+$ sudo curl -o /usr/local/bin/erfs -OL https://raw.githubusercontent.com/hackerschoice/erfs/master/erfs
 $ sudo chmod +x /usr/local/bin/erfs
 ```
 
