@@ -1,7 +1,8 @@
 
 VERSION=1.3
 BIN_NAME=erfs
-PKG_NAME=${BIN_NAME}-client-${VERSION}
+#PKG_NAME=${BIN_NAME}-client-${VERSION}
+PKG_NAME=${BIN_NAME}-${VERSION}
 
 dist:
 	mkdir -p ${PKG_NAME}
@@ -26,7 +27,7 @@ debuild-setup: dist
 debian-debuild: debuild-setup
 	cd build/${PKG_NAME} && \
 	debuild -S
-	lintian --pedantic -IE build/${BIN_NAME}-client_*.dsc
+	lintian --pedantic -IE build/${BIN_NAME}_*.dsc
 
 clean:
 	rm -rf ./build ./${PKG_NAME}.tar.gz

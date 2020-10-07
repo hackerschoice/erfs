@@ -1,4 +1,4 @@
-Source: erfs-client
+Source: erfs
 Section: net
 Priority: optional
 Maintainer: skyper <skyper@thc.org>
@@ -24,7 +24,7 @@ Description: Client to use a free encrypted cloud based network file system
  data (and only that!) is stored in the cloud. The data remains secure even
  if the cloud server is compromised. It does not need root or superuser
  privileges. No need to run your own server. All you need is the bash
- script (literally). It’s one single command to add and use a
+ script (literally). It is one single command to add and use a
  file system:
  .
  $ erfs mount aDe5F2ik3x35x7pfAEAWdC5Y ~/secure
