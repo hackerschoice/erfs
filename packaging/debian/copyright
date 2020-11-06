@@ -1,7 +1,7 @@
 Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
-Upstream-Name: erfs-client
+Upstream-Name: erfs
 Upstream-Contact: skyper <skyper@thc.org>
-Source: https://github.com/hackerschoice/erfs-client
+Source: https://github.com/hackerschoice/erfs
 
 Files: *
 Copyright: 2020 skyper <skyper@thc.org>

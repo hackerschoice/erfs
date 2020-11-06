@@ -4,13 +4,14 @@ Priority: optional
 Maintainer: skyper <skyper@thc.org>
 Build-Depends: debhelper-compat (= 13)
 Standards-Version: 4.5.0
-Homepage: https://github.com/hackerschoice/erfs-client
+Homepage: https://github.com/hackerschoice/erfs
 Rules-Requires-Root: no
 
 Package: erfs
 Architecture: all
 Depends: encfs,
 	sshfs,
+	openssl,
 	${misc:Depends}
 Description: Client to use a free encrypted cloud based network file system
  An easy-to-use, easy-to-setup, hassle-free secure file system with the

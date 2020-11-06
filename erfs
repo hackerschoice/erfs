@@ -215,19 +215,23 @@ unmount_all()
 get_mpass()
 {
 	# read master password from file,device or sym-link if exists
-	if [ x"${1}" = x ]; then
-		echo "ERROR: Need to specify password"
-		exit 1
-	fi
-	# Grugq's idea:
+
+	# Grugq's idea to have -x to read password from stdin:
 	if [ x"${1}" = "x-x" ] || [ x"${1}" = "xstdin" ]; then
 		echo -n "Enter SHARE-SECRET: "
 		read -r mpass
 	elif [ -e "${1}" ]; then
 		read -r mpass <"${1}"
-	else
+	elif [ x"${1}" != x ]; then
 		mpass="${1}"
+	elif [ x"${SEC}" != x ]; then
+		# Try to get password from environment variable
+		mpass="${SEC}"
+	else
+		echo "ERROR: Need to specify password"
+		exit 1
 	fi
+
 	mpass=$(b58convert "$mpass")
 	if [ ${#mpass} -ne "$ENC_B58_LEN" ]; then
 		echo "ERROR. Illegal master password"
@@ -304,8 +308,10 @@ if [ x"$1" = xinit ] || [ x"$1" = xnew ] || [ x"$1" = xi ]; then
 SUCCESS! Now mount your newly created file system like so:
 
   $ $0 mount -x
+or
+  $ $0 mount ${MPASS}
 or 
-  $ X=$MPASS;$0 m /dev/stdin<<<\$X;unset X"
+  $ SEC=${MPASS} $0 m "
 
 	exit 0
 elif [ x"$1" = xstop ] || [ x"$1" = xu ] || [ x"$1" = xumount ] || [ x"$1" = xunmount ]; then

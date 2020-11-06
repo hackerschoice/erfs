@@ -24,15 +24,21 @@ Mount the encrypted remote file system.
 Unmount the encrypted remote file system. SHARE-SECRET is optional and all filesystems will be unmounted if no specific SHARE-SECRET is given.
 .SH OPTIONS
 .TP 13
-.I \-x read the SHARE-SECRET from standard input.
+.I \-x
+read the SHARE-SECRET from standard input.
 .SH SECURITY
-Passing the SHARE-SECRET as command line parameter is insecure. Use the -x option or use (example):
+Passing the SHARE-SECRET as command line parameter is insecure. Use the -x option or set the environment variable (example):
 .P
-$ X=aDe5F2ik3x35x7pfAEAWdC5Y;./erfs m /dev/stdin<<<$X
+$ SEC=aDe5F2ik3x35x7pfAEAWdC5Y ./erfs m
+.SH ENVIRONEMT
+The following environment variable can be set to control the behavior.
+.P
+.I SEC=<SHARE SECRET>
+Specify the SHARE-SECRET to pass it (securely) to erfs.
 .SH COPYRIGHT
 ERFS is entirely my own creation, although plenty of other code was used as examples. It is released under GPL.
 .SH NOTES
-The latest version is available from https://github.com/hackerschoice/erfs-client/.
+The latest version is available from https://github.com/hackerschoice/erfs/.
 .SH BUGS
 Efforts have been made to have erfs "do the right thing" in all its
 various modes.  If you believe that it is doing the wrong thing under
@@ -45,7 +51,7 @@ Initialize a new encrypted and remote file system:
 .br
 $ erfs init
 .P
-Mount the new file system (replace aDe5F2ik3x35x7pfAEAWdC5Y with the shared secret 'init' step):
+Mount the new file system (replace aDe5F2ik3x35x7pfAEAWdC5Y with the SHARE-SECRET from the previous step):
 .br
 $ erfs mount aDe5F2ik3x35x7pfAEAWdC5Y
 .P
