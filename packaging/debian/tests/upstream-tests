@@ -2,5 +2,8 @@
 set -e
 
 # Hmm. Let's try to run a mount test..
+export HOME=$(mktemp -d -t erfs-XXXXXXX)
+[ -c /dev/fuse ] || mknod -m 666 "/dev/fuse" c 10 229
+[ -e /etc/mtab ] || ln -sf ../proc/self/mounts "/etc/mtab"
 /usr/bin/erfs m aDe5F2ik3x35x7pfAEAWdC5Y 
 /usr/bin/erfs u aDe5F2ik3x35x7pfAEAWdC5Y

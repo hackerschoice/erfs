@@ -1,2 +1,3 @@
 Tests: upstream-tests
 Depends: @, @builddeps@
+Restrictions: needs-root, needs-internet

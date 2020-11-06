@@ -1,5 +1,5 @@
-erfs (1.3-1) unstable; urgency=medium
+erfs (1.4-1) unstable; urgency=medium
 
-  * Initial release (closes: #964005)
+  * Initial release (closes: #973857)
 
  -- skyper <skyper@thc.org>  Wed, 17 Jun 2020 10:11:11 +0100
