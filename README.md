@@ -95,9 +95,7 @@ $ erfs mount <SHARE-SECRET>
 
 Passing SHARE-SECRET using the command line parameter is not secure. A better way is:
 ```ShellSession
-$ X=<SHARE-SECRET>
-$ erfs mount /dev/stdin <<<"$X"
-$ unset X
+$ SEC=<SHARE-SECRET> erfs mount
 ```
 
 The tool relies on the underlying security of ssh, sshfs and EncFS.
