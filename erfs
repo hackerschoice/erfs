@@ -217,6 +217,7 @@ get_mpass()
 	# read master password from file,device or sym-link if exists
 
 	# Grugq's idea to have -x to read password from stdin:
+	# shellcheck disable=SC2153 # We mean SEC, not RSEC
 	if [ x"${1}" = "x-x" ] || [ x"${1}" = "xstdin" ]; then
 		echo -n "Enter SHARE-SECRET: "
 		read -r mpass
