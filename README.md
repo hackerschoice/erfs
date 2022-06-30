@@ -1,3 +1,6 @@
+---
+* THIS PROJECT HAS BEEN DISCONTINUED *
+---
 # erfs
 An easy-to-use, easy-to-setup, hassle-free secure file system with the encrypted data being stored on a remote cloud server without having to trust the server.
 
