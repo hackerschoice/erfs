@@ -141,7 +141,7 @@ derive_secrets()
 	# Derive all keys from the master key
 	# RSEC is the username
 	# RID a local id (short)
-	# EPAS is the encryptino password
+	# EPAS is the encryption password
 	# SPAS is the ssh login password
 	RSEC=$(b58sanitize "$(echo s1"${1}" | openssl sha256 -binary | openssl base64)" 16)
 	RID=$(b58sanitize "$(echo i2"${1}" | openssl sha256 -binary | openssl base64)" 4) 
@@ -267,7 +267,7 @@ if [[ x"$OSTYPE" == "xdarwin"* ]]; then
 Buggy SSHFS dedected. Your read performance might be slow.
 Please read https://github.com/osxfuse/sshfs/issues/57 for details.
 
-To fix this please executed:
+To fix this please execute:
     $ sudo curl -sSL https://tiny.cc/apewqz >\"$(which sshfs)\""
 	fi
 
